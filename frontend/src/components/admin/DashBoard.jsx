@@ -10,10 +10,9 @@ import {
   faClipboardList,
   faReceipt,
   faTicket,
-  faComment
+  faComment,
 } from "@fortawesome/free-solid-svg-icons";
 import ManageProduct from "./ProductManage/ManageProduct";
-import ManageBlog from "./BlogManage/ManageBlog";
 import ManageAccount from "./AccountManage/ManageAccount";
 import ManageCategory from "./CategoryManage/ManageCategory";
 import { Link } from "react-router-dom";
@@ -26,14 +25,13 @@ import ProfileAdmin from "./ManageProfile/ProfileAdmin";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { decodeJWT } from "../utils/jwtUtils";
-import ManageReview from "./ReviewManage/ManageReview";
 
 const SidebarItem = ({ icon, label, isSidebarExpanded, onClick, isActive }) => (
   <li
     className={`flex cursor-pointer items-center px-4 py-6 ${
       isActive
         ? "ml-2 mr-2 flex items-center justify-center rounded-2xl bg-black text-white"
-        : "hover:bg-gray-100 hover:rounded-xl hover:mx-2"
+        : "hover:mx-2 hover:rounded-xl hover:bg-gray-100"
     }`}
     onClick={onClick}
   >
@@ -126,8 +124,6 @@ const DashBoard = () => {
         return <ManageProduct />;
       case "Category":
         return <ManageCategory />;
-      case "Blog":
-        return <ManageBlog />;
       case "Order":
         return <ManageOrder />;
       case "Chart":
@@ -136,8 +132,6 @@ const DashBoard = () => {
         return <ManageCoupon />;
       case "ProfileAdmin":
         return <ProfileAdmin />;
-      case "Review":
-        return <ManageReview />;
       default:
         return (
           <div className="p-6">
@@ -214,25 +208,11 @@ const DashBoard = () => {
             isActive={activeComponent === "Category"}
           />
           <SidebarItem
-            icon={faFileWord}
-            label="Bài viết"
-            isSidebarExpanded={isSidebarExpanded}
-            onClick={() => handleSetActiveComponent("Blog")}
-            isActive={activeComponent === "Blog"}
-          />
-          <SidebarItem
             icon={faTicket}
             label="Mã giảm giá"
             isSidebarExpanded={isSidebarExpanded}
             onClick={() => handleSetActiveComponent("Coupon")}
             isActive={activeComponent === "Coupon"}
-          />
-          <SidebarItem
-            icon={faComment}
-            label="Đánh giá"
-            isSidebarExpanded={isSidebarExpanded}
-            onClick={() => handleSetActiveComponent("Review")}
-            isActive={activeComponent === "Review"}
           />
         </ul>
       </div>

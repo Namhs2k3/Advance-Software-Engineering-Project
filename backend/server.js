@@ -4,11 +4,9 @@ import productRoutes from "./routes/product.route.js";
 import accountRoutes from "./routes/account.route.js";
 import loginRoutes from "./routes/loginForm.route.js";
 import categoryRoutes from "./routes/category.route.js";
-import blogRoutes from "./routes/blog.route.js";
 import mainPage from "./routes/mainPage.route.js";
 import couponRoutes from "./routes/coupon.route.js";
 import orderRoutes from "./routes/order.route.js";
-import reviewRoutes from "./routes/review.route.js";
 import cors from "cors";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -31,7 +29,6 @@ const __dirname = path.dirname(__filename);
 
 // Cấu hình đường dẫn tĩnh cho folder assets
 app.use("/assets", express.static(path.join(__dirname, "../backend/assets")));
-app.use("/api/blogs", blogRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/accounts", accountRoutes);
@@ -39,7 +36,6 @@ app.use("/api/mainPages", mainPage);
 app.use("/api/auth", loginRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/reviews", reviewRoutes);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
