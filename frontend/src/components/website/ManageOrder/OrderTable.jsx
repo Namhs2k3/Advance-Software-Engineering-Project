@@ -16,7 +16,7 @@ const OrderTable = () => {
   return (
     <div className="flex">
       {/* Bên trái: Danh sách bàn */}
-      <div className="w-1/3 border-r border-gray-300 p-4">
+      <div className="w-1/2 border-r border-gray-300 p-4">
         <h2 className="mb-4 text-2xl font-bold">Danh sách bàn</h2>
         <div className="grid grid-cols-3 items-start gap-4">
           {tables.map((table) => (

@@ -8,7 +8,6 @@ const AddProduct = ({ showModal, setShowModal }) => {
     sell_price: "",
     category: "",
     displayType: 1,
-    displayHot: 1,
   });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
@@ -55,7 +54,6 @@ const AddProduct = ({ showModal, setShowModal }) => {
     formData.append("sell_price", newProduct.sell_price);
     formData.append("category", newProduct.category);
     formData.append("displayType", newProduct.displayType);
-    formData.append("displayHot", newProduct.displayHot);
 
     try {
       const response = await axios.post(
@@ -170,40 +168,6 @@ const AddProduct = ({ showModal, setShowModal }) => {
                 </option>
               ))}
             </select>
-          </div>
-          <div className="mb-4 flex space-x-4">
-            <div className="w-1/2">
-              <label className="block pb-2 text-xl font-medium">
-                Đặt làm Hot
-              </label>
-              <select
-                value={newProduct.displayHot}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, displayHot: +e.target.value })
-                }
-                required
-                className="h-12 w-1/2 rounded-md border border-gray-300 p-2"
-              >
-                <option value={1}>Hot</option>
-                <option value={2}>Không Hot</option>
-              </select>
-            </div>
-            <div className="w-1/2">
-              <label className="block pb-2 text-xl font-medium">
-                Hiển thị sản phẩm
-              </label>
-              <select
-                value={newProduct.displayType}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, displayType: +e.target.value })
-                }
-                required
-                className="h-12 w-1/2 rounded-md border border-gray-300 p-2"
-              >
-                <option value={1}>Bật</option>
-                <option value={2}>Tắt</option>
-              </select>
-            </div>
           </div>
           <div className="flex justify-between pt-6">
             <button

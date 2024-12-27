@@ -133,12 +133,7 @@ const DashBoard = () => {
       case "ProfileAdmin":
         return <ProfileAdmin />;
       default:
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold">Dashboard</h2>
-            <p>Select an option from the sidebar.</p>
-          </div>
-        );
+        return <ManageAccount />;
     }
   };
 

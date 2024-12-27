@@ -6,7 +6,6 @@ import {
   faPen,
   faEye,
   faEyeSlash,
-  faFire,
 } from "@fortawesome/free-solid-svg-icons";
 import AddProduct from "./AddProduct";
 import UpdateProduct from "./UpdateProduct";
@@ -77,25 +76,6 @@ const ManageProduct = () => {
       });
     } catch (error) {
       console.error("Error updating display type:", error);
-    }
-  };
-
-  // Hàm toggle trạng thái hot
-  const toggleDisplayHot = async (id) => {
-    try {
-      const updatedProducts = products.map((product) =>
-        product._id === id
-          ? { ...product, displayHot: product.displayHot === 1 ? 2 : 1 }
-          : product,
-      );
-      setProducts(updatedProducts);
-
-      // Gửi yêu cầu cập nhật API
-      await axios.put(`http://localhost:5000/api/products/${id}`, {
-        displayHot: updatedProducts.find((p) => p._id === id).displayHot,
-      });
-    } catch (error) {
-      console.error("Error updating display hot:", error);
     }
   };
 
@@ -175,7 +155,6 @@ const ManageProduct = () => {
                   <th className="px-4 py-3 text-center">Giá</th>
                   <th className="px-4 py-3 text-center">Giá giảm</th>
                   <th className="px-4 py-3 text-center">Ngày cập nhật</th>
-                  <th className="px-4 py-3 text-center">Hot</th>
                   <th className="px-4 py-3 text-center">Hoạt động</th>
                   <th className="px-4 py-3 text-center">Chỉnh sửa</th>
                 </tr>
@@ -202,22 +181,6 @@ const ManageProduct = () => {
                     </td>
                     <td className="px-4 py-6 text-center">
                       {new Date(product.updatedAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-2 text-center">
-                      <div className="group relative">
-                        <FontAwesomeIcon
-                          icon={faFire}
-                          className={
-                            product.displayHot === 1
-                              ? "cursor-pointer text-2xl text-red-500"
-                              : "cursor-pointer text-xl text-gray-400"
-                          }
-                          onClick={() => toggleDisplayHot(product._id)}
-                        />
-                        <span className="absolute bottom-full left-1/2 mb-4 -translate-x-1/2 transform whitespace-nowrap rounded-md bg-gray-800 px-2 py-2 text-sm text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-                          Đặt làm Hot
-                        </span>
-                      </div>
                     </td>
                     <td className="px-4 py-2 text-center">
                       <div className="group relative">

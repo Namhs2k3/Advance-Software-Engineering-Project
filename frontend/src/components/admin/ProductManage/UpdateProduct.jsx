@@ -14,7 +14,6 @@ const UpdateProduct = ({
     sell_price: "",
     category: "",
     displayType: 1,
-    displayHot: 1,
   });
   const [categories, setCategories] = useState([]);
 
@@ -74,7 +73,6 @@ const UpdateProduct = ({
       formData.append("sell_price", updatedProduct.sell_price);
       formData.append("category", updatedProduct.category);
       formData.append("displayType", updatedProduct.displayType);
-      formData.append("displayHot", updatedProduct.displayHot);
 
       if (updatedProduct.imageFile) {
         formData.append("image", updatedProduct.imageFile); // Gửi ảnh mới
@@ -184,22 +182,6 @@ const UpdateProduct = ({
                   >
                     <option value={1}>Bật</option>
                     <option value={2}>Tắt</option>
-                  </select>
-                </div>
-
-                <div className="w-1/2">
-                  <label className="block pb-2 text-xl font-medium">
-                    Đặt làm Hot
-                  </label>
-                  <select
-                    value={updatedProduct.displayHot}
-                    name="displayHot"
-                    onChange={handleInputChange}
-                    className="w-2/3 rounded-md border border-gray-300 p-2"
-                    required
-                  >
-                    <option value={1}>Hot</option>
-                    <option value={2}>Không Hot</option>
                   </select>
                 </div>
               </div>

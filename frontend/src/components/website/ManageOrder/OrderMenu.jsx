@@ -65,12 +65,8 @@ const OrderMenu = () => {
 
   return (
     <div className="p-5 text-center">
-      <h1 className="mb-4 text-4xl font-bold">
-        Thực đơn Bamos<span className="text-[#C63402]">Coffee</span>
-      </h1>
-
       {/* Danh sách danh mục */}
-      <div className="flex justify-center font-bold">
+      <div className="flex justify-center pb-4 font-bold">
         {categories.map((category) => (
           <button
             key={category}
@@ -93,27 +89,32 @@ const OrderMenu = () => {
         </div>
       ) : (
         <div className="mx-auto h-[500px] max-w-3xl overflow-y-scroll">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 p-4">
             {filteredProducts.map((item) => (
               <div
                 key={item._id}
-                className="flex min-h-[150px] cursor-pointer items-center gap-4 border p-4 hover:bg-gray-100"
+                className="flex min-h-[150px] cursor-pointer items-center gap-4 rounded-xl border-2 border-gray-300 p-4 hover:bg-gray-100"
                 onClick={() => handleOpenModal(item)}
               >
                 {/* Ảnh sản phẩm */}
                 <img
                   src={item.image}
                   alt={item.name}
-                  className="h-[100px] w-[100px] object-cover"
+                  className="h-32 w-auto object-cover"
                 />
 
                 {/* Thông tin sản phẩm */}
                 <div className="flex-1">
-                  <h6 className="text-lg font-bold text-[#00561e]">
+                  <h6 className="h-20 pr-4 w-[204px] text-start text-lg font-bold text-[#00561e]">
                     {item.name}
                   </h6>
-                  <p className="text-sm font-bold text-[#925802]">
+                  <p className="text-start text-lg font-bold text-[#925802]">
                     {item.sell_price.toLocaleString()} đ
+                    {item.price !== item.sell_price && (
+                      <span className="price-old ml-2 text-sm font-bold text-[#999] line-through">
+                        {item.price.toLocaleString()} đ
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>

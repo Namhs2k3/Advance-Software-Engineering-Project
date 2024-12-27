@@ -75,16 +75,18 @@ const ModalProduct = ({
 
         {/* Right Section */}
         <div className="flex w-full flex-col gap-4 p-5 md:mb-auto md:mr-10 md:mt-auto md:w-1/2">
-          <h1 className="flex flex-col items-center text-4xl font-bold text-[#00561e] md:items-start md:pb-6">
+          <h1 className="flex flex-col text-left text-4xl font-bold text-[#00561e] md:items-start md:pb-6">
             {selectedProduct.name}
           </h1>
           <p className="flex flex-col items-center gap-2 md:flex-row">
             <span className="text-3xl font-bold text-[#663402]">
               {selectedProduct.sell_price.toLocaleString()}đ
             </span>
-            <span className="text-xl text-gray-500 line-through">
-              {selectedProduct.price.toLocaleString()}đ
-            </span>
+            {selectedProduct.price !== selectedProduct.sell_price && (
+              <span className="price-old ml-2 text-xl font-bold text-[#999] line-through">
+                {selectedProduct.price.toLocaleString()} đ
+              </span>
+            )}
           </p>
           <div className="h-[1px] w-full bg-gray-300"></div>
           <div className="w-full">
