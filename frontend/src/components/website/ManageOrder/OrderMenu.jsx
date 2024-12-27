@@ -8,16 +8,17 @@ const OrderMenu = () => {
   const [categories, setCategories] = useState(["TẤT CẢ"]);
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1); // Khởi tạo state cho quantity
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/mainPages/activeCategories",
+          "http://localhost:5000/api/mainPages/activeCategories"
         );
         const categoryData = response.data.data.map(
-          (category) => category.name,
+          (category) => category.name
         );
         setCategories(["TẤT CẢ", ...categoryData]);
       } catch (error) {
@@ -33,7 +34,7 @@ const OrderMenu = () => {
       setIsLoading(true);
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/mainPages/activeProducts",
+          "http://localhost:5000/api/mainPages/activeProducts"
         );
         setProducts(response.data.data);
       } catch (error) {
@@ -52,6 +53,7 @@ const OrderMenu = () => {
 
   const handleOpenModal = (product) => {
     setSelectedProduct(product);
+    setQuantity(1); // Mỗi khi mở modal, đặt lại quantity là 1
   };
 
   const handleCloseModal = () => {
@@ -88,7 +90,7 @@ const OrderMenu = () => {
           <Loading />
         </div>
       ) : (
-        <div className="mx-auto h-[500px] max-w-3xl overflow-y-scroll">
+        <div className="mx-auto h-[530px] max-w-3xl overflow-y-scroll">
           <div className="grid grid-cols-2 gap-4 p-4">
             {filteredProducts.map((item) => (
               <div
@@ -127,6 +129,8 @@ const OrderMenu = () => {
       {selectedProduct && (
         <ModalProduct
           selectedProduct={selectedProduct}
+          quantity={quantity} // Truyền quantity vào ModalProduct
+          setQuantity={setQuantity} // Truyền setQuantity vào ModalProduct
           onClose={handleCloseModal}
         />
       )}

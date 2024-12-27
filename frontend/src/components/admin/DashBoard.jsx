@@ -5,12 +5,11 @@ import {
   faChartColumn,
   faBars,
   faGlassWater,
-  faFileWord,
   faRightToBracket,
   faClipboardList,
   faReceipt,
   faTicket,
-  faComment,
+  faCouch,
 } from "@fortawesome/free-solid-svg-icons";
 import ManageProduct from "./ProductManage/ManageProduct";
 import ManageAccount from "./AccountManage/ManageAccount";
@@ -25,6 +24,7 @@ import ProfileAdmin from "./ManageProfile/ProfileAdmin";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { decodeJWT } from "../utils/jwtUtils";
+import ManageTable from "./TableManage/ManageTable";
 
 const SidebarItem = ({ icon, label, isSidebarExpanded, onClick, isActive }) => (
   <li
@@ -132,6 +132,8 @@ const DashBoard = () => {
         return <ManageCoupon />;
       case "ProfileAdmin":
         return <ProfileAdmin />;
+      case "Table":
+        return <ManageTable/>;
       default:
         return <ManageAccount />;
     }
@@ -208,6 +210,13 @@ const DashBoard = () => {
             isSidebarExpanded={isSidebarExpanded}
             onClick={() => handleSetActiveComponent("Coupon")}
             isActive={activeComponent === "Coupon"}
+          />
+          <SidebarItem
+            icon={faCouch}
+            label="Bàn"
+            isSidebarExpanded={isSidebarExpanded}
+            onClick={() => handleSetActiveComponent("Table")}
+            isActive={activeComponent === "Table"}
           />
         </ul>
       </div>

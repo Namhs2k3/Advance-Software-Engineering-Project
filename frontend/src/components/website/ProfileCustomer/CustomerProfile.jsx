@@ -6,7 +6,6 @@ import axios from "axios";
 import Cookies from "js-cookie"; // Thư viện xử lý cookies
 import { decodeJWT } from "../../utils/jwtUtils"; // Hàm decodeJWT bạn đã tạo
 import Loading from "../Loading"
-import OrderHistory from "./OrderHistory";
 
 const CustomerProfile = () => {
   const [profileData, setProfileData] = useState(null); // Trạng thái lưu thông tin tài khoản
@@ -115,9 +114,6 @@ const CustomerProfile = () => {
             </button>
           </div>
         </div>
-      </div>
-      <div className="w-full max-w-7xl rounded-lg bg-white p-6">
-        <OrderHistory/>
       </div>
 
       {isPasswordModalOpen && (

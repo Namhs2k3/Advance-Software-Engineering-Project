@@ -1,33 +1,44 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faCartPlus } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
+import img2 from "../../../backend/assets/20200003_2.png";
 
 const PaymentPage = () => {
   const location = useLocation();
   const { cartItems: initialCartItems } = location.state || {};
 
-  const [cartItems, setCartItems] = useState(initialCartItems || []);
+  // Static data for testing
+  const staticCartItems = [
+    {
+      productId: 1,
+      name: "Product 1",
+      price: 100000,
+      quantity: 2,
+      image: img2,
+    },
+    {
+      productId: 2,
+      name: "Product 2",
+      price: 200000,
+      quantity: 1,
+      image: img2,
+    },
+  ];
+
+  const staticValidCoupons = [
+    { code: "DISCOUNT10", discountValue: 10000, currentUsage: 0, maxUsage: 5 },
+    { code: "DISCOUNT20", discountValue: 20000, currentUsage: 0, maxUsage: 5 },
+  ];
+
+  const [cartItems, setCartItems] = useState(
+    initialCartItems || staticCartItems,
+  );
   const [selectedPayment, setSelectedPayment] = useState(1);
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
-  const [validCoupons, setValidCoupons] = useState([]); // Dữ liệu coupons từ API
-
-  useEffect(() => {
-    // Gọi API để lấy danh sách coupon
-    const fetchCoupons = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/coupons"); // Thay URL bằng API của bạn
-        setValidCoupons(response.data.data); // Cập nhật state từ API
-      } catch (error) {
-        console.error("Lỗi khi lấy danh sách coupon:", error);
-      }
-    };
-
-    fetchCoupons();
-  }, []);
+  const [validCoupons, setValidCoupons] = useState(staticValidCoupons);
 
   useEffect(() => {
     localStorage.setItem("tempCart", JSON.stringify(cartItems));
@@ -41,9 +52,8 @@ const PaymentPage = () => {
   }, []);
 
   useEffect(() => {
-    // Kiểm tra mã giảm giá mỗi khi couponCode thay đổi
     if (couponCode.trim() === "") {
-      setDiscount(0); // Nếu không có mã, giảm giá là 0
+      setDiscount(0); // If no coupon code, set discount to 0
     } else {
       const coupon = validCoupons.find((c) => c.code === couponCode);
       if (coupon) {
@@ -54,32 +64,32 @@ const PaymentPage = () => {
           toast.error(
             "Mã giảm giá đã hết số lượng sử dụng, vui lòng thử mã khác.",
           );
-          setDiscount(0); // Không áp dụng mã giảm giá
+          setDiscount(0); // Don't apply discount if coupon is invalid
         } else {
-          setDiscount(coupon.discountValue); // Nếu mã hợp lệ và còn số lần sử dụng, áp dụng giảm giá
+          setDiscount(coupon.discountValue); // Apply discount if valid
         }
       } else {
-        setDiscount(0); // Nếu mã không hợp lệ, giảm giá là 0
+        setDiscount(0); // If coupon is invalid, set discount to 0
       }
     }
-  }, [couponCode, validCoupons]); // Chạy lại khi couponCode hoặc validCoupons thay đổi
+  }, [couponCode, validCoupons]);
 
   if (!cartItems || cartItems.length === 0) {
     return (
       <div className="success-container mb-28 mt-20 flex flex-col place-content-center items-center sm:mb-32 sm:mt-32">
         <FontAwesomeIcon icon={faCartPlus} className="text-7xl text-black" />
         <h1 className="mt-4 text-center font-josefin text-3xl font-bold">
-          Giỏ hàng của bạn hiện đang không có sản phẩm nào!!!
+          Giỏ hàng hiện đang không có sản phẩm nào!!!
         </h1>
         <p className="mt-2 text-center font-josefin text-lg font-bold">
-          Vui lòng quay trở lại trang chủ để lựa chọn mặt hàng mà bạn yêu thích
-          trước khi vào trang thanh toán.
+          Vui lòng quay trở lại trang chủ để cập nhật giỏ hàng trước khi vào
+          trang thanh toán.
         </p>
         <a
           href="/menu"
           className="mt-8 rounded-lg bg-[#d88453] px-6 pb-2 pt-4 font-josefin text-2xl text-white hover:rounded-3xl hover:bg-[#633c02]"
         >
-          Quay trở lại trang mua sắm
+          Quay trở lại trang chủ
         </a>
       </div>
     );
@@ -114,14 +124,12 @@ const PaymentPage = () => {
     const numericValue = parseInt(value, 10);
 
     if (!value) {
-      // Khi người dùng xóa hết, giữ trống tạm thời
       setCartItems((prevCartItems) =>
         prevCartItems.map((item) =>
           item.productId === productId ? { ...item, quantity: "" } : item,
         ),
       );
     } else if (!isNaN(numericValue) && numericValue >= 1) {
-      // Khi nhập số hợp lệ
       setCartItems((prevCartItems) =>
         prevCartItems.map((item) =>
           item.productId === productId
@@ -151,7 +159,7 @@ const PaymentPage = () => {
         toast.error(
           "Mã giảm giá đã hết số lượng sử dụng, vui lòng thử mã khác.",
         );
-        setDiscount(0); // Không áp dụng mã giảm giá
+        setDiscount(0); // Don't apply discount if coupon is invalid
       } else {
         setDiscount(coupon.discountValue);
         toast.success("Mã giảm giá đã được áp dụng thành công!");
@@ -165,7 +173,6 @@ const PaymentPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prepare the cart data with correct product ids
     const orderData = {
       name: e.target.name.value,
       address: e.target.address.value,
@@ -177,23 +184,19 @@ const PaymentPage = () => {
       finalPrice: finalPrice,
       couponCode: couponCode || null,
       cart: cartItems.map((item) => ({
-        productId: item.productId, // Đây là nơi bạn gửi id sản phẩm
+        productId: item.productId,
         quantity: item.quantity,
         price: item.price,
       })),
     };
 
-    // Log toàn bộ dữ liệu orderData để kiểm tra
     console.log("Dữ liệu gửi lên server:", orderData);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/orders",
-        orderData,
-      );
-      toast(response.data.message);
-      localStorage.removeItem("tempCart"); //làm trống giỏ hàng
-      window.location.href = "/order-success"; // Redirect after successful order
+      // Simulating an API request
+      toast.success("Đặt hàng thành công!");
+      localStorage.removeItem("tempCart");
+      window.location.href = "/order-success";
     } catch (error) {
       console.error("Lỗi khi tạo đơn hàng:", error);
       toast.error("Đã có lỗi xảy ra, vui lòng thử lại.");
@@ -205,13 +208,11 @@ const PaymentPage = () => {
   return (
     <div className="mx-auto mb-20 max-w-[1200px] px-4">
       <div className="grid grid-cols-1 gap-6 pt-12 sm:grid-cols-10">
-        {/* Phần thông tin khách hàng chiếm 6 cột */}
         <div className="payment-left order-2 col-span-10 sm:order-1 sm:col-span-6">
           <h3 className="mb-4 pt-4 font-josefin text-4xl font-bold">
             Thông tin khách hàng
           </h3>
           <form onSubmit={handleSubmit} className="input-group space-y-4">
-            {/* Các trường thông tin */}
             <div className="input-payment">
               <input
                 type="text"
@@ -257,14 +258,10 @@ const PaymentPage = () => {
                 placeholder="Ghi chú (vd: giao lúc 10 giờ)"
               />
             </div>
-
-            {/* Phương thức thanh toán */}
             <div className="payment-method">
               <h4 className="mb-4 py-3 font-josefin text-4xl font-bold">
                 Phương tiện thanh toán
               </h4>
-
-              {/* Các lựa chọn phương thức thanh toán */}
               <button
                 type="button"
                 className={`payment-option mb-4 flex w-full cursor-pointer items-center rounded-2xl border p-4 transition-colors duration-300 hover:text-black ${
@@ -311,8 +308,6 @@ const PaymentPage = () => {
                   </span>
                 </label>
               </button>
-
-              {/* Option 2 */}
               <button
                 type="button"
                 className={`payment-option flex w-full cursor-pointer items-center rounded-2xl border p-4 transition-colors duration-300 hover:text-black ${
@@ -360,16 +355,14 @@ const PaymentPage = () => {
                 </label>
               </button>
             </div>
-
             <button
               type="submit"
               className="mt-8 h-16 w-full rounded-2xl bg-black px-4 font-josefin text-xl font-bold text-white transition-transform duration-200 hover:scale-95"
             >
-              ĐẶT NGAY {finalPrice.toLocaleString()}₫
+              Xác nhận đặt hàng {finalPrice.toLocaleString()}₫
             </button>
           </form>
         </div>
-        {/* Phần thông tin giỏ hàng chiếm 4 cột */}
         <div className="order-1 col-span-10 sm:order-2 sm:col-span-4">
           <h3 className="name-option-payment mb-2 pt-4 font-josefin text-[32px] text-xl font-bold">
             Thông tin sản phẩm
@@ -382,7 +375,7 @@ const PaymentPage = () => {
               >
                 <div className="w-3/12 flex-shrink-0">
                   <img
-                    src={item.img}
+                    src={item.image}
                     alt={item.name}
                     className="h-20% w-20% rounded-lg object-cover"
                   />
