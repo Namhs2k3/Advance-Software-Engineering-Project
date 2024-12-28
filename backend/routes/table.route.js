@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  addProductToCart,
   createTable,
   deleteTable,
   getTableById,
@@ -10,8 +11,9 @@ import {
 const router = express.Router();
 
 router.get("/", getTables);
-router.get("/:id",getTableById);
+router.get("/:id", getTableById);
 router.post("/", createTable);
+router.put("/:id/addProduct", addProductToCart);
 router.put("/:id", updateTable);
 router.delete("/:id", deleteTable);
 
