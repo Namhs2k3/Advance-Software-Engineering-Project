@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlus,
@@ -10,55 +11,67 @@ import AddTable from "./AddTable";
 import UpdateTable from "./UpdateTable";
 
 const ManageTable = () => {
-  const [tables, setTables] = useState([
-    {
-      id: 1,
-      name: "1",
-      isActive: 1,
-      createdAt: "2024-01-01",
-      updatedAt: "2024-01-02",
-    },
-    {
-      id: 2,
-      name: "2",
-      isActive: 1,
-      createdAt: "2024-01-03",
-      updatedAt: "2024-01-04",
-    },
-    {
-      id: 3,
-      name: "3",
-      isActive: 2,
-      createdAt: "2024-01-05",
-      updatedAt: "2024-01-06",
-    },
-  ]);
+  const [tables, setTables] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddFormVisible, setAddFormVisible] = useState(false);
   const [isUpdateFormVisible, setUpdateFormVisible] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
 
+  // Fetch tables from the server
+  useEffect(() => {
+    const fetchTables = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/tables");
+        setTables(response.data.data);
+      } catch (error) {
+        console.error("Error fetching tables:", error.message);
+      }
+    };
+
+    fetchTables();
+  }, []);
+
+  // Filter tables based on search term
   const filteredTables = tables.filter((table) =>
     table.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const toggleIsActive = (id) => {
-    const updatedTables = tables.map((table) =>
-      table.id === id
-        ? { ...table, isActive: table.isActive === 1 ? 2 : 1 }
-        : table,
-    );
-    setTables(updatedTables);
+  // Toggle isActive for a table
+  const toggleIsActive = async (id) => {
+    try {
+      const table = tables.find((t) => t._id === id);
+      const newIsActive = table.isActive === 1 ? 2 : 1;
+
+      // Gửi yêu cầu cập nhật lên server
+      const response = await axios.put(
+        `http://localhost:5000/api/tables/${id}`,
+        {
+          isActive: newIsActive,
+        },
+      );
+      if (response.data.success) {
+        // Cập nhật trạng thái trong state
+        setTables((prevTables) =>
+          prevTables.map((t) =>
+            t._id === id ? { ...t, isActive: newIsActive } : t,
+          ),
+        );
+      }
+    } catch (error) {
+      console.error("Error toggling isActive:", error.message);
+    }
   };
 
+  // Handle table update
   const handleUpdateTable = (updatedTable) => {
     setTables((prevTables) =>
       prevTables.map((table) =>
-        table.id === updatedTable.id ? updatedTable : table,
+        table._id === updatedTable._id ? updatedTable : table,
       ),
     );
   };
 
+  // Open the update form
   const openUpdateForm = (table) => {
     setSelectedTable(table);
     setUpdateFormVisible(true);
@@ -103,7 +116,7 @@ const ManageTable = () => {
             </thead>
             <tbody>
               {filteredTables.map((table) => (
-                <tr key={table.id} className="border-b">
+                <tr key={table._id} className="border-b">
                   <td className="px-4 py-6 font-bold">{table.name}</td>
                   <td className="px-4 py-6 text-center">
                     {new Date(table.createdAt).toLocaleDateString()}
@@ -120,7 +133,7 @@ const ManageTable = () => {
                             ? "cursor-pointer text-green-500"
                             : "cursor-pointer text-gray-400"
                         }
-                        onClick={() => toggleIsActive(table.id)}
+                        onClick={() => toggleIsActive(table._id)}
                       />
                       <span className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 transform whitespace-nowrap rounded-md bg-gray-800 px-2 py-2 text-sm text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
                         Bật hoạt động
@@ -159,11 +172,11 @@ const ManageTable = () => {
       {isUpdateFormVisible && selectedTable && (
         <UpdateTable
           table={selectedTable}
-          onClose={() => setUpdateFormVisible(false)} 
+          onClose={() => setUpdateFormVisible(false)}
           onUpdateTable={(updatedTable) => {
             setTables((prevTables) =>
               prevTables.map((table) =>
-                table.id === updatedTable.id ? updatedTable : table,
+                table._id === updatedTable._id ? updatedTable : table,
               ),
             );
           }}

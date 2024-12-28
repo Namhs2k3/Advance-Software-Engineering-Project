@@ -1,5 +1,6 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
+import axios from "axios";
 
 const AddTable = ({ onAddTable, onClose }) => {
   const [newTable, setNewTable] = useState({
@@ -7,24 +8,39 @@ const AddTable = ({ onAddTable, onClose }) => {
     isActive: 1, // Mặc định là 1 (Active)
   });
 
+  const [loading, setLoading] = useState(false); // Thêm trạng thái loading
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewTable({ ...newTable, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newTable.name || !newTable.isActive) {
-      alert("Please fill in all fields.");
+
+    if (!newTable.name) {
+      alert("Vui lòng nhập tên bàn.");
       return;
     }
-    const date = new Date().toLocaleDateString("en-GB"); // Format: DD-MM-YYYY
-    onAddTable({
-      ...newTable,
-      createdAt: date,
-      updatedAt: date,
-    });
-    onClose(); // Đóng form sau khi thêm xong
+
+    setLoading(true); // Bắt đầu loading
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/tables",
+        newTable,
+      );
+      if (response.data.success) {
+        onAddTable(response.data.data); // Gửi dữ liệu mới về component cha
+        onClose(); // Đóng form sau khi thêm xong
+      } else {
+        alert("Không thể thêm bàn. Vui lòng thử lại.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi thêm bàn:", error.message);
+      alert("Đã xảy ra lỗi khi thêm bàn.");
+    } finally {
+      setLoading(false); // Kết thúc loading
+    }
   };
 
   return (
@@ -61,14 +77,18 @@ const AddTable = ({ onAddTable, onClose }) => {
               type="button"
               onClick={onClose}
               className="w-28 rounded-md bg-gray-300 px-4 py-2 text-black hover:bg-gray-400"
+              disabled={loading}
             >
               Hủy
             </button>
             <button
               type="submit"
-              className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+              className={`rounded-md px-4 py-2 text-white ${
+                loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
+              }`}
+              disabled={loading}
             >
-              Tạo bàn
+              {loading ? "Đang xử lý..." : "Tạo bàn"}
             </button>
           </div>
         </form>
