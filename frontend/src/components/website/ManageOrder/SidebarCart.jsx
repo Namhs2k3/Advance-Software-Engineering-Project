@@ -1,38 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
-import img2 from "../../../../../backend/assets/20200003_2.png";
+import axios from "axios";
 
-const SidebarCart = ({ isOpen, onClose }) => {
-  const navigate = useNavigate(); // Sử dụng useNavigate
+const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
+  const navigate = useNavigate();
+  const [cart, setCart] = useState([]);
 
-  const [cartItems, setCartItems] = useState([
-    {
-      _id: "1",
-      name: "Cà phê sữa đá",
-      image: img2,
-      price: 20000,
-      quantity: 2,
-    },
-    {
-      _id: "2",
-      name: "Trà sữa trân châu đường đen full",
-      image: img2,
-      price: 30000,
-      quantity: 1,
-    },
-    {
-      _id: "3",
-      name: "mì ý sốt cà chua với phô mai marcharone",
-      image: img2,
-      price: 40000,
-      quantity: 1,
-    },
-  ]);
+  useEffect(() => {
+    if (selectedTable && isOpen) {
+      const fetchCart = async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/api/tables/${selectedTable._id}`,
+          );
+          if (response.data.success) {
+            setCart(response.data.data.cart); // Ensure you're getting the cart data properly
+          }
+        } catch (error) {
+          console.error("Error fetching table data", error);
+        }
+      };
+
+      fetchCart();
+    }
+  }, [isOpen, selectedTable]);
 
   const handleQuantityChange = (id, value) => {
-    setCartItems((prevItems) =>
+    setCart((prevItems) =>
       prevItems.map((item) =>
         item._id === id
           ? { ...item, quantity: Math.max(item.quantity + value, 1) }
@@ -44,7 +40,7 @@ const SidebarCart = ({ isOpen, onClose }) => {
   const handleInputChange = (id, e) => {
     const value = e.target.value;
     if (value === "") {
-      setCartItems((prevItems) =>
+      setCart((prevItems) =>
         prevItems.map((item) =>
           item._id === id ? { ...item, quantity: "" } : item,
         ),
@@ -52,7 +48,7 @@ const SidebarCart = ({ isOpen, onClose }) => {
     } else {
       const numericValue = parseInt(value, 10);
       if (!isNaN(numericValue) && numericValue >= 1) {
-        setCartItems((prevItems) =>
+        setCart((prevItems) =>
           prevItems.map((item) =>
             item._id === id ? { ...item, quantity: numericValue } : item,
           ),
@@ -62,7 +58,7 @@ const SidebarCart = ({ isOpen, onClose }) => {
   };
 
   const handleBlur = (id) => {
-    setCartItems((prevItems) =>
+    setCart((prevItems) =>
       prevItems.map((item) =>
         item._id === id
           ? { ...item, quantity: item.quantity === "" ? 1 : item.quantity }
@@ -72,15 +68,15 @@ const SidebarCart = ({ isOpen, onClose }) => {
   };
 
   const handleRemoveItem = (id) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item._id !== id));
+    setCart((prevItems) => prevItems.filter((item) => item._id !== id));
   };
 
   const handleCheckout = () => {
     navigate("/payment"); // Chuyển hướng đến trang Payment
   };
 
-  const totalPrice = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+  const totalPrice = cart.reduce(
+    (total, item) => total + item.product.price * item.quantity,
     0,
   );
 
@@ -107,24 +103,24 @@ const SidebarCart = ({ isOpen, onClose }) => {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
-          {cartItems.length === 0 ? (
+          {cart.length === 0 ? (
             <div className="text-center text-xl font-semibold text-gray-500">
               Chưa gọi món
             </div>
           ) : (
-            cartItems.map((item) => (
+            cart.map((item) => (
               <div
                 key={item._id}
                 className="flex items-center border-b border-gray-200 py-4"
               >
                 <img
-                  src={item.image}
-                  alt={item.name}
+                  src={item.product.image}
+                  alt={item.product.name}
                   className="h-20 w-20 rounded-md object-cover"
                 />
-                <div className="flex-1 ml-3">
-                  <h4 className="font-josefin line-clamp-2 w-[306px] text-2xl font-bold text-black">
-                    {item.name}
+                <div className="ml-3 flex-1">
+                  <h4 className="line-clamp-2 w-[285px] font-josefin text-2xl font-bold text-black">
+                    {item.product.name}
                   </h4>
                   <div className="mt-2 flex items-center gap-2">
                     <button
@@ -155,8 +151,8 @@ const SidebarCart = ({ isOpen, onClose }) => {
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
-                  <span className="block font-josefin line-clamp-1 pt-10 text-lg font-bold text-black">
-                    {(item.quantity * item.price).toLocaleString()}₫
+                  <span className="line-clamp-1 block pt-10 font-josefin text-lg font-bold text-black">
+                    {(item.quantity * item.product.price).toLocaleString()}₫
                   </span>
                 </div>
               </div>
@@ -167,8 +163,8 @@ const SidebarCart = ({ isOpen, onClose }) => {
         {/* Footer */}
         <div className="border-t border-gray-300 p-4">
           <div className="mb-4 flex justify-between">
-            <span className="text-2xl font-bold font-josefin">Tổng cộng:</span>
-            <span className="text-2xl font-bold text-gray-800 font-josefin">
+            <span className="font-josefin text-2xl font-bold">Tổng cộng:</span>
+            <span className="font-josefin text-2xl font-bold text-gray-800">
               {totalPrice.toLocaleString()} đ
             </span>
           </div>

@@ -145,6 +145,7 @@ const OrderTable = () => {
       <SidebarCart
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        selectedTable={selectedTable}
       />
 
       {/* Modal xác nhận */}
