@@ -30,7 +30,6 @@ const OrderMenu = ({ selectedTable, onAddToCart }) => {
         {
           productId: product._id,
           quantity: product.quantity,
-          totalPrice: product.sell_price * product.quantity, // Tính tổng giá của sản phẩm
         },
       );
 

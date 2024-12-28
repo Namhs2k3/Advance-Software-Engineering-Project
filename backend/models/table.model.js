@@ -6,8 +6,8 @@ const tableSchema = new mongoose.Schema(
     isActive: { type: Number, default: 1 },
     status: { type: Number, default: 1 },
     activeStep: { type: Number, default: 0 },
-    request: {type: Number, default: 0},
-    notice: {type: Number, default: 0},
+    request: { type: Number, default: 0 },
+    notice: { type: Number, default: 0 },
     cart: [
       {
         product: {
@@ -16,7 +16,7 @@ const tableSchema = new mongoose.Schema(
           required: true,
         },
         quantity: { type: Number, required: true },
-        statusProduct: { type: Number, default: 1 },
+        statusProduct: { type: Number, default: 0 },
       },
     ],
   },

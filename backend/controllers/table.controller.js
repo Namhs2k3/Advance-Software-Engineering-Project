@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Table from "../models/table.model.js";
+import Product from "../models/product.model.js";
 // Get all tables
 export const getTables = async (req, res) => {
   try {
@@ -117,8 +118,8 @@ export const addProductToCart = async (req, res) => {
     }
 
     // Kiểm tra nếu sản phẩm đã có trong giỏ
-    const existingCartItem = table.CartItem.find(
-      (item) => item.productId.toString() === productId
+    const existingCartItem = table.cart.find(
+      (item) => item.product.toString() === productId // Fix: Referencing 'cart' not 'CartItem'
     );
 
     if (existingCartItem) {
@@ -127,7 +128,7 @@ export const addProductToCart = async (req, res) => {
       existingCartItem.totalPrice += totalPrice;
     } else {
       // Thêm sản phẩm mới vào giỏ
-      table.CartItem.push({ productId, quantity, totalPrice });
+      table.cart.push({ product: productId, quantity, totalPrice });
     }
 
     // Lưu vào cơ sở dữ liệu
@@ -135,7 +136,7 @@ export const addProductToCart = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      updatedCartItem: table.CartItem, // Trả về giỏ hàng đã cập nhật
+      updatedCartItem: table.cart, // Trả về giỏ hàng đã cập nhật
     });
   } catch (error) {
     console.error(error);
@@ -170,5 +171,45 @@ export const getTableById = async (req, res) => {
   } catch (error) {
     console.error("Error in fetching table by ID: ", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+export const getTableAsRequest = async (req, res) => {
+  try {
+    const tables = await Table.find({ request: 1 })
+      .populate({
+        path: "cart.product", // Populate product details from the Product model
+        select: "name image price category", // Select fields to include
+        populate: {
+          path: "category", // Populate category details
+          select: "name", // Include only the category name
+        },
+      })
+      .lean(); // Convert Mongoose documents to plain JavaScript objects
+
+    // Process image paths
+    const tablesWithImages = tables.map((table) => ({
+      ...table,
+      cart: table.cart.map((item) => ({
+        ...item,
+        product: {
+          ...item.product,
+          image: item.product.image
+            ? `http://localhost:5000/assets/${item.product.image}`
+            : null, // Add full image path if exists
+        },
+      })),
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: tablesWithImages,
+    });
+  } catch (error) {
+    console.error("Error in fetching tables with products: ", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };

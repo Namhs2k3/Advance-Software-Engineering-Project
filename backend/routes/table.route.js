@@ -3,13 +3,15 @@ import {
   addProductToCart,
   createTable,
   deleteTable,
+  getTableAsRequest,
   getTableById,
   getTables,
   updateTable,
 } from "../controllers/table.controller.js";
-
+import { upload } from "../middleware/multer.js";
 const router = express.Router();
 
+router.get("/request", upload.single("image"), getTableAsRequest);
 router.get("/", getTables);
 router.get("/:id", getTableById);
 router.post("/", createTable);

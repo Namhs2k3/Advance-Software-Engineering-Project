@@ -1,77 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faPlus } from "@fortawesome/free-solid-svg-icons";
-import UpdateRequest from "./UpdateRequest"; // Assuming this is the new component with the progress bar
-import img2 from "../../../../../backend/assets/20200003_2.png";
+import UpdateRequest from "./UpdateRequest"; // Component với progress bar
 
 const ManageRequest = () => {
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      name: " 1",
-      status: 1,
-      activeStep: 0,
-      createdAt: "2024-01-01",
-      updatedAt: "2024-01-02",
-      items: [
-        {
-          name: "Cà phê",
-          image: img2,
-          quantity: 1,
-        },
-        {
-          name: "Sữa đặc",
-          image: img2,
-          quantity: 1,
-        },
-        {
-          name: "Sữa đặc",
-          image: img2,
-          quantity: 1,
-        },
-        {
-          name: "Sữa đặc",
-          image: img2,
-          quantity: 1,
-        },
-        {
-          name: "Sữa đặc",
-          image: img2,
-          quantity: 1,
-        },
-        {
-          name: "Sữa đặc",
-          image: img2,
-          quantity: 1,
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: " 2",
-      status: 2,
-      activeStep: 0,
-      createdAt: "2024-01-03",
-      updatedAt: "2024-01-04",
-      items: [
-        {
-          name: "Trà sữa",
-          image: img2,
-          quantity: 2,
-        },
-      ],
-    },
-  ]);
-
-
+  const [orders, setOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isUpdateFormVisible, setUpdateFormVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  // Fetch data from API
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/tables/request",
+        );
+        if (response.data.success) {
+          setOrders(response.data.data);
+        } else {
+          console.error("Failed to fetch orders");
+        }
+      } catch (error) {
+        console.error("Error fetching data from API:", error.message);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  // Filter orders based on search term
   const filteredOrders = orders.filter((order) =>
     order.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  // Open update form
   const openUpdateForm = (order) => {
     setSelectedOrder(order);
     setUpdateFormVisible(true);
@@ -113,8 +77,10 @@ const ManageRequest = () => {
             </thead>
             <tbody>
               {filteredOrders.map((order) => (
-                <tr key={order.id} className="border-b">
-                  <td className="px-4 py-6 font-bold text-center">{order.name}</td>
+                <tr key={order._id} className="border-b">
+                  <td className="px-4 py-6 text-center font-bold">
+                    {order.name}
+                  </td>
                   <td className="px-4 py-6 text-center">{order.activeStep}</td>
                   <td className="px-4 py-6 text-center">
                     {new Date(order.createdAt).toLocaleDateString()}

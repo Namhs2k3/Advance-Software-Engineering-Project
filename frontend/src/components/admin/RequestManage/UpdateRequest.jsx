@@ -81,7 +81,7 @@ const UpdateRequest = ({ order, onClose }) => {
           {/* Order details */}
           <div className="mx-auto h-[350px] max-w-3xl overflow-y-scroll">
             <div className="grid grid-cols-2 gap-4 p-4">
-              {order.items.map((item, index) => (
+              {order?.items?.map((item, index) => (
                 <div
                   key={index}
                   className="flex min-h-[150px] items-center gap-4 rounded-xl border-2 border-gray-300 p-4"
