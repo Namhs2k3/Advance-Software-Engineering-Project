@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import Table from "../models/table.model.js";
-
 // Get all tables
 export const getTables = async (req, res) => {
   try {
@@ -100,6 +99,38 @@ export const deleteTable = async (req, res) => {
       .json({ success: true, message: "Table deleted successfully" });
   } catch (error) {
     console.error("Error in deleting table: ", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// Get a table's cart
+// Get table by ID, including populated cart.product information
+export const getTableById = async (req, res) => {
+  const { id } = req.params;
+
+  // Kiểm tra ID có hợp lệ không
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Invalid Table ID" });
+  }
+
+  try {
+    // Tìm table theo ID và populate trường cart.product
+    const table = await Table.findById(id).populate('cart.product');
+
+    // Kiểm tra nếu không tìm thấy table
+    if (!table) {
+      return res.status(404).json({
+        success: false,
+        message: "Table not found",
+      });
+    }
+
+    // Trả về thông tin table với thông tin cart đã được populate
+    res.status(200).json({ success: true, data: table });
+  } catch (error) {
+    console.error("Error in fetching table by ID: ", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };

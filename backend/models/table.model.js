@@ -4,10 +4,15 @@ const tableSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     isActive: { type: Number, default: 1 },
-    cartItems: [
+    status: { type: Number, default: 1 },
+    cart: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "CartItem",
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        quantity: { type: Number, required: true },
       },
     ],
   },

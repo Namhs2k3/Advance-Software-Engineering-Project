@@ -8,6 +8,7 @@ import mainPage from "./routes/mainPage.route.js";
 import couponRoutes from "./routes/coupon.route.js";
 import orderRoutes from "./routes/order.route.js";
 import tableRoutes from "./routes/table.route.js";
+import cartRoutes from "./routes/cartItem.route.js"
 import cors from "cors";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -38,6 +39,7 @@ app.use("/api/auth", loginRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/tables", tableRoutes);
+app.use("/api/cartItems", cartRoutes);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
