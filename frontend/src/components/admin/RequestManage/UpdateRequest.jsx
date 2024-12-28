@@ -5,7 +5,7 @@ import { faXmark, faCheck } from "@fortawesome/free-solid-svg-icons";
 const steps = ["Chờ", "Đang chuẩn bị", "Hoàn thành"]; // 3 steps
 
 const UpdateRequest = ({ order, onClose }) => {
-  const [activeStep, setActiveStep] = useState(order.status);
+  const [activeStep, setActiveStep] = useState(order.activeStep);
 
   const handleNext = () => {
     if (activeStep < steps.length - 1) {
@@ -37,44 +37,46 @@ const UpdateRequest = ({ order, onClose }) => {
         <div className="mt-6">
           {/* Progress Bar */}
           <div className="relative mb-4 pt-2">
-            <div className="h-1 w-full rounded-full bg-gray-300">
+            <div className="absolute top-[43px] ml-10 h-1 w-11/12 rounded-full bg-gray-300">
               <div
-                className="h-1 rounded-full bg-blue-500"
+                className="me-2 h-1 rounded-full bg-blue-500"
                 style={{
                   width: `${(activeStep / (steps.length - 1)) * 100}%`,
                 }}
               ></div>
             </div>
+            <div className="relative mb-4">
+              <ul className="mb-4 flex justify-between">
+                {steps.map((step, index) => (
+                  <li key={index} className="flex flex-col items-center h-24 w-24 rounded-full bg-white">
+                    <div
+                      className={`step flex h-12 w-12 items-center justify-center rounded-full text-xl font-bold ${
+                        activeStep >= index
+                          ? "bg-blue-500 text-white"
+                          : "border-2 bg-white text-gray-400"
+                      }`}
+                    >
+                      {activeStep >= index ? (
+                        <FontAwesomeIcon icon={faCheck} />
+                      ) : (
+                        index + 1
+                      )}
+                    </div>
+                    {/* Text description below each step */}
+                    <span className="mt-2 text-xl font-semibold text-gray-500">
+                      {index === 0
+                        ? "Đã nhận"
+                        : index === 1
+                          ? "Đang nấu"
+                          : "Gửi món"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* Step Numbers */}
-          <ul className="mb-4 flex justify-between">
-            {steps.map((step, index) => (
-              <li key={index} className="flex flex-col items-center">
-                <div
-                  className={`step flex h-12 w-12 items-center justify-center rounded-full text-xl font-bold ${
-                    activeStep >= index
-                      ? "bg-blue-500 text-white"
-                      : "border-2 bg-white text-gray-400"
-                  }`}
-                >
-                  {activeStep >= index ? (
-                    <FontAwesomeIcon icon={faCheck} />
-                  ) : (
-                    index + 1
-                  )}
-                </div>
-                {/* Text description below each step */}
-                <span className="mt-2 text-xl font-semibold text-gray-500">
-                  {index === 0
-                    ? "Nhận yêu cầu"
-                    : index === 1
-                      ? "Đang nấu"
-                      : "Gửi món"}
-                </span>
-              </li>
-            ))}
-          </ul>
 
           {/* Order details */}
           <div className="mx-auto h-[350px] max-w-3xl overflow-y-scroll">

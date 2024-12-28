@@ -1,5 +1,6 @@
 import SearchItem from "./SearchItem";
 import Login from "./Login";
+import Notification from "./Notification";
 
 const Navbar = () => {
   return (
@@ -9,6 +10,7 @@ const Navbar = () => {
         <span className="font-oswald text-[#c63402]"> Cousine</span>
       </a>
       <div className="flex items-center space-x-4">
+        <Notification />
         <SearchItem />
         <Login />
       </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faCartPlus } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faCartPlus } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import img2 from "../../../backend/assets/20200003_2.png";
 
@@ -25,6 +25,35 @@ const PaymentPage = () => {
       quantity: 1,
       image: img2,
     },
+    {
+      productId: 4,
+      name: "Product 2",
+      price: 200000,
+      quantity: 1,
+      image: img2,
+    },
+    {
+      productId: 3,
+      name: "Product 2",
+      price: 200000,
+      quantity: 1,
+      image: img2,
+    },
+    {
+      productId: 5,
+      name: "Product 2",
+      price: 200000,
+      quantity: 1,
+      image: img2,
+    },
+    {
+      productId: 6,
+      name: "Product 2",
+      price: 200000,
+      quantity: 1,
+      image: img2,
+    },
+
   ];
 
   const staticValidCoupons = [
@@ -206,8 +235,8 @@ const PaymentPage = () => {
   const finalPrice = Math.max(calculatedTotalPrice - discount, 0);
 
   return (
-    <div className="mx-auto mb-20 max-w-[1200px] px-4">
-      <div className="grid grid-cols-1 gap-6 pt-12 sm:grid-cols-10">
+    <div className="mx-auto mt-8 max-w-[1200px] px-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-10">
         <div className="payment-left order-2 col-span-10 sm:order-1 sm:col-span-6">
           <h3 className="mb-4 pt-4 font-josefin text-4xl font-bold">
             Thông tin khách hàng
@@ -219,15 +248,6 @@ const PaymentPage = () => {
                 name="name"
                 className="h-16 w-full rounded-2xl border border-gray-300 p-2"
                 placeholder="Họ tên"
-                required
-              />
-            </div>
-            <div className="input-payment">
-              <input
-                type="text"
-                name="address"
-                className="h-16 w-full rounded-2xl border border-gray-300 p-2 pt-3"
-                placeholder="Địa chỉ"
                 required
               />
             </div>
@@ -247,17 +267,7 @@ const PaymentPage = () => {
                 required
               />
             </div>
-            <div>
-              <p className="pb-1 pl-1 pt-1 font-josefin text-2xl font-bold">
-                Ghi chú đặt hàng
-              </p>
-              <input
-                type="text"
-                name="note"
-                className="h-16 w-full rounded-2xl border border-gray-300 p-2"
-                placeholder="Ghi chú (vd: giao lúc 10 giờ)"
-              />
-            </div>
+            
             <div className="payment-method">
               <h4 className="mb-4 py-3 font-josefin text-4xl font-bold">
                 Phương tiện thanh toán
@@ -367,7 +377,7 @@ const PaymentPage = () => {
           <h3 className="name-option-payment mb-2 pt-4 font-josefin text-[32px] text-xl font-bold">
             Thông tin sản phẩm
           </h3>
-          <div className="mb-4 max-h-[620px] overflow-y-auto rounded-lg bg-white p-4">
+          <div className="mb-4 max-h-[390px] overflow-y-auto rounded-lg bg-white p-4">
             {cartItems.map((item) => (
               <div
                 key={item.productId}
@@ -420,7 +430,7 @@ const PaymentPage = () => {
                     className="absolute right-0 top-0 text-2xl text-gray-400 hover:text-black"
                     onClick={() => removeItem(item.productId)}
                   >
-                    <FontAwesomeIcon icon={faTimes} />
+                    <FontAwesomeIcon icon={faTrash} />
                   </button>
                   <span className="block pt-16 font-semibold text-black">
                     {(item.quantity * item.price).toLocaleString()}₫

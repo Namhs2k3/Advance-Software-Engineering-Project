@@ -5,6 +5,7 @@ const tableSchema = new mongoose.Schema(
     name: { type: String, required: true },
     isActive: { type: Number, default: 1 },
     status: { type: Number, default: 1 },
+    activeStep: {type: Number, default: 0},
     cart: [
       {
         product: {

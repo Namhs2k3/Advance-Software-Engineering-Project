@@ -8,9 +8,9 @@ const ManageRequest = () => {
   const [orders, setOrders] = useState([
     {
       id: 1,
-      name: "Bàn 1",
-      quantity: 2,
+      name: " 1",
       status: 1,
+      activeStep: 0,
       createdAt: "2024-01-01",
       updatedAt: "2024-01-02",
       items: [
@@ -48,9 +48,9 @@ const ManageRequest = () => {
     },
     {
       id: 2,
-      name: "Bàn 2",
-      quantity: 1,
-      status: 0,
+      name: " 2",
+      status: 2,
+      activeStep: 0,
       createdAt: "2024-01-03",
       updatedAt: "2024-01-04",
       items: [
@@ -104,8 +104,8 @@ const ManageRequest = () => {
           <table className="min-w-full table-auto">
             <thead>
               <tr className="bg-gray-100">
-                <th className="px-4 py-3 text-left">Tên món</th>
-                <th className="px-4 py-3 text-center">Số lượng</th>
+                <th className="px-4 py-3 text-center">Tên Bàn</th>
+                <th className="px-4 py-3 text-center">Trạng thái</th>
                 <th className="px-4 py-3 text-center">Ngày tạo</th>
                 <th className="px-4 py-3 text-center">Ngày cập nhật</th>
                 <th className="px-4 py-3 text-center">Chỉnh sửa</th>
@@ -114,8 +114,8 @@ const ManageRequest = () => {
             <tbody>
               {filteredOrders.map((order) => (
                 <tr key={order.id} className="border-b">
-                  <td className="px-4 py-6 font-bold">{order.name}</td>
-                  <td className="px-4 py-6 text-center">{order.quantity}</td>
+                  <td className="px-4 py-6 font-bold text-center">{order.name}</td>
+                  <td className="px-4 py-6 text-center">{order.activeStep}</td>
                   <td className="px-4 py-6 text-center">
                     {new Date(order.createdAt).toLocaleDateString()}
                   </td>
