@@ -3,20 +3,30 @@ import SidebarCart from "./SidebarCart";
 import OrderMenu from "./OrderMenu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import { toast } from "react-toastify"; // Import toastify
 
 const OrderTable = () => {
   const [tables, setTables] = useState([
-    { id: 1, name: "Bàn 1", orders: [] },
-    { id: 2, name: "Bàn 2", orders: [] },
-    { id: 3, name: "Bàn 3", orders: [] },
-    { id: 4, name: "Bàn 4", orders: [] },
-    { id: 5, name: "Bàn 5", orders: [] },
-    { id: 6, name: "Bàn 6", orders: [] },
-    { id: 7, name: "Bàn 7", orders: [] },
+    { id: 1, name: "Bàn 1", orders: [], status: 1 },
+    { id: 2, name: "Bàn 2", orders: [], status: 1 },
+    { id: 3, name: "Bàn 3", orders: [], status: 2 },
+    { id: 4, name: "Bàn 4", orders: [], status: 1 },
+    { id: 5, name: "Bàn 5", orders: [], status: 2 },
+    { id: 6, name: "Bàn 6", orders: [], status: 2 },
+    { id: 7, name: "Bàn 7", orders: [], status: 1 },
   ]);
   const [selectedTable, setSelectedTable] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Xử lý thay đổi trạng thái bàn
+  const handleTableClick = (table) => {
+    if (selectedTable?.id === table.id) {
+      setSelectedTable(null); // Nếu bàn đang được chọn, bỏ chọn
+    } else {
+      setSelectedTable(table); // Chọn bàn
+    }
+  };
 
   // Xử lý mở modal
   const handleOpenModal = () => {
@@ -31,9 +41,23 @@ const OrderTable = () => {
   // Xử lý tạo bàn mới
   const handleAddTable = () => {
     const newTableId = tables.length + 1;
-    const newTable = { id: newTableId, name: `Bàn ${newTableId}`, orders: [] };
+    const newTable = {
+      id: newTableId,
+      name: `Bàn ${newTableId}`,
+      orders: [],
+      status: 1,
+    };
     setTables([...tables, newTable]);
-    setIsModalOpen(false); // Đóng modal sau khi tạo bàn
+    setIsModalOpen(false);
+  };
+
+  // Xử lý mở giỏ hàng
+  const handleViewCart = () => {
+    if (selectedTable) {
+      setIsSidebarOpen(true); // Mở giỏ hàng nếu đã chọn bàn
+    } else {
+      toast.error("Hãy chọn bàn để xem giỏ hàng!"); // Hiển thị toast nếu chưa chọn bàn
+    }
   };
 
   return (
@@ -46,12 +70,14 @@ const OrderTable = () => {
             {tables.map((table) => (
               <div
                 key={table.id}
-                className={`flex h-20 w-48 cursor-pointer items-center justify-center rounded-md border text-center font-josefin text-2xl font-bold ${
+                className={`flex h-20 w-48 cursor-pointer items-center justify-center border text-center font-josefin text-2xl font-bold ${
                   selectedTable?.id === table.id
-                    ? "bg-[#633c02] text-white"
-                    : "bg-white text-gray-800"
+                    ? "bg-[#633c02] text-white" // Màu nâu đậm khi bàn được chọn
+                    : table.status === 2
+                      ? "bg-[#dea58d] text-gray-800" // Màu nâu nhạt khi bàn có sản phẩm
+                      : "bg-white text-gray-800" // Màu trắng khi bàn trống
                 } hover:bg-[#d88453]`}
-                onClick={() => setSelectedTable(table)} // Chỉ chọn bàn
+                onClick={() => handleTableClick(table)} // Chọn hoặc bỏ chọn bàn
               >
                 {table.name}
               </div>
@@ -59,7 +85,7 @@ const OrderTable = () => {
 
             {/* Ô thêm bàn */}
             <div
-              className="flex h-20 w-48 cursor-pointer items-center justify-center rounded-md border bg-gray-100 text-center text-green-800 hover:bg-black hover:text-white"
+              className="flex h-20 w-48 cursor-pointer items-center justify-center border bg-gray-100 text-center text-green-800 hover:bg-black hover:text-white"
               onClick={handleOpenModal}
             >
               <span className="text-3xl font-bold">
@@ -72,12 +98,12 @@ const OrderTable = () => {
         {/* Nút xem giỏ hàng */}
         <div className="flex">
           <button
-            className="mx-4 mt-4 w-full rounded-md bg-[#633c02] py-3 text-lg font-bold text-white transition-transform duration-200 hover:scale-90"
-            onClick={() => setIsSidebarOpen(true)}
+            className="mx-4 mt-4 w-full bg-black py-3 text-lg font-bold text-white transition-transform duration-200 hover:scale-90"
+            onClick={handleViewCart} // Gọi hàm kiểm tra chọn bàn và mở giỏ hàng
           >
             Xem giỏ hàng
           </button>
-          <button className="mx-4 mt-4 w-full rounded-md bg-[#633c02] py-3 text-lg font-bold text-white transition-transform duration-200 hover:scale-90">
+          <button className="mx-4 mt-4 w-full bg-black py-3 text-lg font-bold text-white transition-transform duration-200 hover:scale-90">
             Gửi món
           </button>
         </div>
@@ -115,13 +141,13 @@ const OrderTable = () => {
             {/* Nút lựa chọn */}
             <div className="flex">
               <button
-                className="mr-16 mt-4 rounded-md bg-gray-300 px-14 pb-3 pt-4 text-xl font-bold text-gray-800 transition-transform duration-200 hover:scale-90"
+                className="mr-16 mt-4 bg-gray-300 px-14 pb-3 pt-4 text-xl font-bold text-gray-800 transition-transform duration-200 hover:scale-90"
                 onClick={handleCloseModal}
               >
                 Không
               </button>
               <button
-                className="mt-4 rounded-md bg-[#633c02] px-14 pb-3 pt-4 text-xl font-bold text-white transition-transform duration-200 hover:scale-90"
+                className="mt-4 bg-[#633c02] px-14 pb-3 pt-4 text-xl font-bold text-white transition-transform duration-200 hover:scale-90"
                 onClick={handleAddTable}
               >
                 Đồng ý

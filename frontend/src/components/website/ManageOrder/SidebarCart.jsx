@@ -9,23 +9,23 @@ const SidebarCart = ({ isOpen, onClose }) => {
 
   const [cartItems, setCartItems] = useState([
     {
-      productId: "1",
+      _id: "1",
       name: "Cà phê sữa đá",
-      img: img2,
+      image: img2,
       price: 20000,
       quantity: 2,
     },
     {
-      productId: "2",
+      _id: "2",
       name: "Trà sữa trân châu",
-      img: img2,
+      image: img2,
       price: 30000,
       quantity: 1,
     },
     {
-      productId: "3",
+      _id: "3",
       name: "Trà đào cam sả",
-      img: img2,
+      image: img2,
       price: 40000,
       quantity: 1,
     },
@@ -34,17 +34,45 @@ const SidebarCart = ({ isOpen, onClose }) => {
   const handleQuantityChange = (id, value) => {
     setCartItems((prevItems) =>
       prevItems.map((item) =>
-        item.productId === id
+        item._id === id
           ? { ...item, quantity: Math.max(item.quantity + value, 1) }
           : item,
       ),
     );
   };
 
-  const handleRemoveItem = (id) => {
+  const handleInputChange = (id, e) => {
+    const value = e.target.value;
+    if (value === "") {
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item._id === id ? { ...item, quantity: "" } : item,
+        ),
+      );
+    } else {
+      const numericValue = parseInt(value, 10);
+      if (!isNaN(numericValue) && numericValue >= 1) {
+        setCartItems((prevItems) =>
+          prevItems.map((item) =>
+            item._id === id ? { ...item, quantity: numericValue } : item,
+          ),
+        );
+      }
+    }
+  };
+
+  const handleBlur = (id) => {
     setCartItems((prevItems) =>
-      prevItems.filter((item) => item.productId !== id),
+      prevItems.map((item) =>
+        item._id === id
+          ? { ...item, quantity: item.quantity === "" ? 1 : item.quantity }
+          : item,
+      ),
     );
+  };
+
+  const handleRemoveItem = (id) => {
+    setCartItems((prevItems) => prevItems.filter((item) => item._id !== id));
   };
 
   const handleCheckout = () => {
@@ -85,52 +113,59 @@ const SidebarCart = ({ isOpen, onClose }) => {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
-          {cartItems.map((item) => (
-            <div
-              key={item.productId}
-              className="flex items-center gap-4 border-b border-gray-200 py-4"
-            >
-              <img
-                src={item.img}
-                alt={item.name}
-                className="h-20 w-20 rounded-md object-cover"
-              />
-              <div className="flex-1">
-                <h4 className="font-josefin text-2xl font-bold text-black">
-                  {item.name}
-                </h4>
-                <p className="text-lg font-semibold text-black">
-                  {item.price.toLocaleString()} đ
-                </p>
-                <div className="mt-2 flex items-center gap-2">
-                  <button
-                    className="flex h-8 w-8 items-center justify-center rounded-full border text-black hover:bg-gray-200"
-                    onClick={() => handleQuantityChange(item.productId, -1)}
-                  >
-                    <FontAwesomeIcon icon={faMinus} />
-                  </button>
-                  <input
-                    type="text"
-                    value={item.quantity}
-                    readOnly
-                    className="h-8 w-12 rounded-md border text-center"
-                  />
-                  <button
-                    className="flex h-8 w-8 items-center justify-center rounded-full border text-black hover:bg-gray-200"
-                    onClick={() => handleQuantityChange(item.productId, 1)}
-                  >
-                    <FontAwesomeIcon icon={faPlus} />
-                  </button>
-                </div>
-              </div>
-              <button
-                className="text-2xl text-gray-500 hover:text-red-700"
-                onClick={() => handleRemoveItem(item.productId)}
-              >
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
+          {cartItems.length === 0 ? (
+            <div className="text-center text-xl font-semibold text-gray-500">
+              Chưa gọi món
             </div>
-          ))}
+          ) : (
+            cartItems.map((item) => (
+              <div
+                key={item._id}
+                className="flex items-center gap-4 border-b border-gray-200 py-4"
+              >
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="h-20 w-20 rounded-md object-cover"
+                />
+                <div className="flex-1">
+                  <h4 className="font-josefin text-2xl font-bold text-black">
+                    {item.name}
+                  </h4>
+                  <p className="text-lg font-semibold text-black">
+                    {item.price.toLocaleString()} đ
+                  </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-full border text-black hover:bg-gray-200"
+                      onClick={() => handleQuantityChange(item._id, -1)}
+                    >
+                      <FontAwesomeIcon icon={faMinus} />
+                    </button>
+                    <input
+                      type="text"
+                      value={item.quantity}
+                      onChange={(e) => handleInputChange(item._id, e)}
+                      onBlur={() => handleBlur(item._id)}
+                      className="h-8 w-12 rounded-md border text-center"
+                    />
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-full border text-black hover:bg-gray-200"
+                      onClick={() => handleQuantityChange(item._id, 1)}
+                    >
+                      <FontAwesomeIcon icon={faPlus} />
+                    </button>
+                  </div>
+                </div>
+                <button
+                  className="text-2xl text-gray-500 hover:text-red-700"
+                  onClick={() => handleRemoveItem(item._id)}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Footer */}

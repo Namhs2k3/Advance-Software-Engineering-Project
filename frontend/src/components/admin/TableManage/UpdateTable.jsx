@@ -25,7 +25,7 @@ const UpdateTable = ({ table, onClose, onUpdateTable }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
       <div className="w-full max-w-md rounded-lg bg-white p-6">
         <h2 className="mb-4 flex justify-center text-4xl font-bold">
-          Chỉnh sửa bàn
+          Chỉnh sửa bàn 
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

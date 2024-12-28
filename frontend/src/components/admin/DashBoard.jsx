@@ -10,6 +10,7 @@ import {
   faReceipt,
   faTicket,
   faCouch,
+  faBellConcierge
 } from "@fortawesome/free-solid-svg-icons";
 import ManageProduct from "./ProductManage/ManageProduct";
 import ManageAccount from "./AccountManage/ManageAccount";
@@ -25,6 +26,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { decodeJWT } from "../utils/jwtUtils";
 import ManageTable from "./TableManage/ManageTable";
+import ManageRequest from "./RequestManage/ManageRequest";
 
 const SidebarItem = ({ icon, label, isSidebarExpanded, onClick, isActive }) => (
   <li
@@ -133,7 +135,9 @@ const DashBoard = () => {
       case "ProfileAdmin":
         return <ProfileAdmin />;
       case "Table":
-        return <ManageTable/>;
+        return <ManageTable />;
+      case "Request":
+        return <ManageRequest />;
       default:
         return <ManageAccount />;
     }
@@ -217,6 +221,13 @@ const DashBoard = () => {
             isSidebarExpanded={isSidebarExpanded}
             onClick={() => handleSetActiveComponent("Table")}
             isActive={activeComponent === "Table"}
+          />
+          <SidebarItem
+            icon={faBellConcierge}
+            label="Phiếu ghi món"
+            isSidebarExpanded={isSidebarExpanded}
+            onClick={() => handleSetActiveComponent("Request")}
+            isActive={activeComponent === "Request"}
           />
         </ul>
       </div>
