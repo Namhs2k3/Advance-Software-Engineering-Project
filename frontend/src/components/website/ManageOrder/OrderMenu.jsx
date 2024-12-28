@@ -1,24 +1,60 @@
 import { useState, useEffect } from "react";
-import ModalProduct from "../../ModalProduct"; // Import ModalProduct component
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import Loading from "../Loading";
+import { toast } from "react-toastify";
 
-const OrderMenu = () => {
+const OrderMenu = ({ selectedTable, onAddToCart }) => {
   const [activeCategory, setActiveCategory] = useState("TẤT CẢ");
   const [categories, setCategories] = useState(["TẤT CẢ"]);
   const [products, setProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [quantity, setQuantity] = useState(1); // Khởi tạo state cho quantity
   const [isLoading, setIsLoading] = useState(true);
+  const [cart, setCart] = useState([]);
+
+  const handleAddToCart = async (product) => {
+    if (!selectedTable) {
+      toast.error("Vui lòng chọn bàn trước khi thêm sản phẩm vào giỏ hàng!");
+      return;
+    }
+
+    // Log ID của bàn, sản phẩm và số lượng
+    console.log("Bàn ID:", selectedTable._id); // ID của bàn
+    console.log("Sản phẩm ID:", product._id); // ID của sản phẩm
+    console.log("Số lượng:", product.quantity); // Số lượng của sản phẩm
+
+    try {
+      // Gửi yêu cầu API để thêm sản phẩm vào giỏ hàng của bàn
+      const response = await axios.put(
+        `http://localhost:5000/api/tables/${selectedTable._id}/addProduct`,
+        {
+          productId: product._id,
+          quantity: product.quantity,
+          totalPrice: product.sell_price * product.quantity, // Tính tổng giá của sản phẩm
+        },
+      );
+
+      if (response.data.success) {
+        toast.success("Thêm vào giỏ hàng thành công!");
+        // Cập nhật giỏ hàng nếu cần thiết (nếu bạn muốn làm điều này sau khi nhận phản hồi từ server)
+        if (onAddToCart) onAddToCart(response.data.updatedCartItem);
+      } else {
+        toast.error("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
+      }
+    } catch (error) {
+      console.error("Error adding product to cart:", error.message);
+      toast.error("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
+    }
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/mainPages/activeCategories"
+          "http://localhost:5000/api/mainPages/activeCategories",
         );
         const categoryData = response.data.data.map(
-          (category) => category.name
+          (category) => category.name,
         );
         setCategories(["TẤT CẢ", ...categoryData]);
       } catch (error) {
@@ -34,9 +70,13 @@ const OrderMenu = () => {
       setIsLoading(true);
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/mainPages/activeProducts"
+          "http://localhost:5000/api/mainPages/activeProducts",
         );
-        setProducts(response.data.data);
+        const productData = response.data.data.map((product) => ({
+          ...product,
+          quantity: 1, // Set default quantity to 1
+        }));
+        setProducts(productData);
       } catch (error) {
         console.error("Error fetching products:", error.message);
       } finally {
@@ -51,13 +91,49 @@ const OrderMenu = () => {
     setActiveCategory(category);
   };
 
-  const handleOpenModal = (product) => {
-    setSelectedProduct(product);
-    setQuantity(1); // Mỗi khi mở modal, đặt lại quantity là 1
+  const handleQuantityChange = (id, value) => {
+    setProducts((prevProducts) =>
+      prevProducts.map((product) =>
+        product._id === id
+          ? { ...product, quantity: Math.max(product.quantity + value, 1) }
+          : product,
+      ),
+    );
   };
 
-  const handleCloseModal = () => {
-    setSelectedProduct(null);
+  const handleInputChange = (id, e) => {
+    const value = e.target.value;
+    if (value === "") {
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product._id === id ? { ...product, quantity: "" } : product,
+        ),
+      );
+    } else {
+      const numericValue = parseInt(value, 10);
+      if (!isNaN(numericValue) && numericValue >= 1) {
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product._id === id
+              ? { ...product, quantity: numericValue }
+              : product,
+          ),
+        );
+      }
+    }
+  };
+
+  const handleBlur = (id) => {
+    setProducts((prevProducts) =>
+      prevProducts.map((product) =>
+        product._id === id
+          ? {
+              ...product,
+              quantity: product.quantity === "" ? 1 : product.quantity,
+            }
+          : product,
+      ),
+    );
   };
 
   const filteredProducts =
@@ -90,13 +166,12 @@ const OrderMenu = () => {
           <Loading />
         </div>
       ) : (
-        <div className="mx-auto h-[530px] max-w-3xl overflow-y-scroll">
+        <div className="mx-auto h-[530px] max-w-4xl overflow-y-scroll">
           <div className="grid grid-cols-2 gap-4 p-4">
             {filteredProducts.map((item) => (
               <div
                 key={item._id}
-                className="flex min-h-[150px] cursor-pointer items-center gap-4 rounded-xl border-2 border-gray-300 p-4 hover:bg-gray-100"
-                onClick={() => handleOpenModal(item)}
+                className="flex min-h-[190px] cursor-pointer items-center gap-4 rounded-xl border-2 border-gray-300 p-4 hover:bg-gray-100"
               >
                 {/* Ảnh sản phẩm */}
                 <img
@@ -107,10 +182,10 @@ const OrderMenu = () => {
 
                 {/* Thông tin sản phẩm */}
                 <div className="flex-1">
-                  <h6 className="h-20 pr-4 w-[204px] text-start text-lg font-bold text-[#00561e]">
+                  <h6 className="line-clamp-2 w-[204px] pb-4 pr-4 text-start text-lg font-bold text-[#00561e]">
                     {item.name}
                   </h6>
-                  <p className="text-start text-lg font-bold text-[#925802]">
+                  <p className="pb-2 text-start text-lg font-bold text-[#925802]">
                     {item.sell_price.toLocaleString()} đ
                     {item.price !== item.sell_price && (
                       <span className="price-old ml-2 text-sm font-bold text-[#999] line-through">
@@ -118,21 +193,39 @@ const OrderMenu = () => {
                       </span>
                     )}
                   </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-full border text-black hover:bg-gray-200"
+                      onClick={() => handleQuantityChange(item._id, -1)}
+                    >
+                      <FontAwesomeIcon icon={faMinus} />
+                    </button>
+                    <input
+                      type="text"
+                      value={item.quantity}
+                      onChange={(e) => handleInputChange(item._id, e)}
+                      onBlur={() => handleBlur(item._id)}
+                      className="h-8 w-12 rounded-md border text-center"
+                    />
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-full border text-black hover:bg-gray-200"
+                      onClick={() => handleQuantityChange(item._id, 1)}
+                    >
+                      <FontAwesomeIcon icon={faPlus} />
+                    </button>
+                    {/* Nút thêm vào giỏ hàng */}
+                    <button
+                      className="ml-10 flex h-12 w-12 items-center justify-center rounded-full border bg-orange-950 font-bold text-white"
+                      onClick={() => handleAddToCart(item)}
+                    >
+                      <FontAwesomeIcon icon={faPlus} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      )}
-
-      {/* Modal sản phẩm */}
-      {selectedProduct && (
-        <ModalProduct
-          selectedProduct={selectedProduct}
-          quantity={quantity} // Truyền quantity vào ModalProduct
-          setQuantity={setQuantity} // Truyền setQuantity vào ModalProduct
-          onClose={handleCloseModal}
-        />
       )}
     </div>
   );

@@ -90,14 +90,14 @@ const OrderTable = () => {
   return (
     <div className="flex">
       {/* Bên trái: Danh sách bàn */}
-      <div className="flex w-1/2 flex-col border-r border-gray-300 p-4">
+      <div className="flex w-5/12 flex-col border-r border-gray-300 p-4">
         <h2 className="mb-4 text-2xl font-bold">Danh sách bàn</h2>
         <div className="flex-1 overflow-y-auto">
           <div className="grid max-h-[500px] grid-cols-3 items-start gap-4">
             {tables.map((table) => (
               <div
                 key={table._id} // Sử dụng _id từ MongoDB
-                className={`flex h-20 w-48 cursor-pointer items-center justify-center border text-center font-josefin text-2xl font-bold ${
+                className={`flex h-20 w-40 cursor-pointer items-center justify-center border text-center font-josefin text-2xl font-bold ${
                   selectedTable?._id === table._id
                     ? "bg-[#633c02] text-white" // Màu nâu đậm khi bàn được chọn
                     : table.status === 2
@@ -112,7 +112,7 @@ const OrderTable = () => {
 
             {/* Ô thêm bàn */}
             <div
-              className="flex h-20 w-48 cursor-pointer items-center justify-center border bg-gray-100 text-center text-green-800 hover:bg-black hover:text-white"
+              className="flex h-20 w-40 cursor-pointer items-center justify-center border bg-gray-100 text-center text-green-800 hover:bg-black hover:text-white"
               onClick={handleOpenModal}
             >
               <span className="text-3xl font-bold">
