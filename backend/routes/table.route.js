@@ -14,6 +14,7 @@ import {
 
 const router = express.Router();
 
+router.get("/request", getTableAsRequest);
 router.get("/", getTables);
 router.get("/:id", getTableById);
 router.post("/", createTable);
@@ -23,6 +24,6 @@ router.delete("/:id", deleteTable);
 router.put("/:id/removeProduct", removeProductFromCart);
 router.put("/:id/updateProductQuantity", updateProductQuantity);
 router.put("/:id/sendRequest", sendRequestToChef);
-router.get("/request", upload.single("image"), getTableAsRequest);
+
 
 export default router;

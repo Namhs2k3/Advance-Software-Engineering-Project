@@ -1,4 +1,3 @@
-// ManageRequest.js
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -35,6 +34,7 @@ const ManageRequest = () => {
   );
 
   const openUpdateForm = (table) => {
+    console.log("Selected table data:", table);
     setSelectedTable(table);
     setUpdateFormVisible(true);
   };
@@ -103,7 +103,7 @@ const ManageRequest = () => {
 
       {isUpdateFormVisible && selectedTable && (
         <UpdateRequest
-          table={selectedTable}
+          order={selectedTable}
           onClose={() => setUpdateFormVisible(false)}
         />
       )}

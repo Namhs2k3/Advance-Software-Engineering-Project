@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell, faTrash } from "@fortawesome/free-solid-svg-icons";
 
@@ -8,6 +8,7 @@ const sampleData = [
     isActive: 1,
     status: 1,
     activeStep: 2,
+    notice: 1,
     cart: [
       { product: "64f4c5b", quantity: 2 },
       { product: "64f4c6c", quantity: 1 },
@@ -18,6 +19,7 @@ const sampleData = [
     isActive: 1,
     status: 1,
     activeStep: 2,
+    notice: 0,
     cart: [{ product: "64f4c7d", quantity: 3 }],
   },
   {
@@ -25,6 +27,7 @@ const sampleData = [
     isActive: 1,
     status: 1,
     activeStep: 0,
+    notice: 1,
     cart: [{ product: "64f4c8e", quantity: 1 }],
   },
 ];
@@ -43,7 +46,7 @@ const Notification = () => {
   };
 
   const activeStepCount = notifications.filter(
-    (table) => table.activeStep === 2,
+    (table) => table.notice === 1,
   ).length;
 
   return (
@@ -78,7 +81,7 @@ const Notification = () => {
         <div className="p-4">
           <h2 className="mb-4 text-xl font-bold">Notifications</h2>
           {notifications.map((table, index) => {
-            if (table.activeStep === 2) {
+            if (table.notice === 1) {
               return (
                 <div
                   key={index}

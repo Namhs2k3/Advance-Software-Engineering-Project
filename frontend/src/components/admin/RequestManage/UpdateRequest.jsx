@@ -48,7 +48,10 @@ const UpdateRequest = ({ order, onClose }) => {
             <div className="relative mb-4">
               <ul className="mb-4 flex justify-between">
                 {steps.map((step, index) => (
-                  <li key={index} className="flex flex-col items-center h-24 w-24 rounded-full bg-white">
+                  <li
+                    key={index}
+                    className="flex h-24 w-24 flex-col items-center rounded-full bg-white"
+                  >
                     <div
                       className={`step flex h-12 w-12 items-center justify-center rounded-full text-xl font-bold ${
                         activeStep >= index
