@@ -50,7 +50,7 @@ const OrderTable = () => {
   // Xử lý thay đổi trạng thái bàn
   const handleTableClick = (table) => {
     if (selectedTable?._id === table._id) {
-      setSelectedTable(null); // Nếu bàn đang được chọn, bỏ chọn
+      setSelectedTable(null); // Nếu bàn đầu tiên đang được chọn, bỏ chọn
     } else if (secondSelectedTable?._id === table._id) {
       setSecondSelectedTable(null); // Nếu bàn thứ hai đang được chọn, bỏ chọn
     } else {
@@ -61,6 +61,7 @@ const OrderTable = () => {
       }
     }
   };
+
   const handleOpenSwapModal = () => {
     if (selectedTable && secondSelectedTable) {
       setIsSwapModalOpen(true); // Mở modal xác nhận chuyển bàn
@@ -131,50 +132,65 @@ const OrderTable = () => {
 
   // Xử lý mở giỏ hàng
   const handleViewCart = () => {
-    if (selectedTable) {
-      setIsSidebarOpen(true); // Mở giỏ hàng nếu đã chọn bàn
+    if (selectedTable && secondSelectedTable) {
+      toast.error("Bạn không thể xem giỏ hàng khi đã chọn hai bàn.");
+    } else if (selectedTable) {
+      setIsSidebarOpen(true); // Mở giỏ hàng nếu chỉ có một bàn được chọn
     } else {
-      toast.error("Hãy chọn bàn để xem giỏ hàng!"); // Hiển thị toast nếu chưa chọn bàn
+      toast.error("Hãy chọn bàn để xem giỏ hàng!"); // Thông báo nếu chưa chọn bàn
     }
   };
 
   const handleSendRequest = async () => {
-    if (!selectedTable) {
+    if (selectedTable && secondSelectedTable) {
+      toast.error("Bạn không thể gửi món khi đã chọn hai bàn.");
+    } else if (!selectedTable) {
       toast.error("Vui lòng chọn bàn để gửi món.");
-      return;
-    }
-
-    // First, reload the table data to ensure we have the latest state
-    try {
-      const tableResponse = await axios.get(
-        `http://localhost:5000/api/tables/${selectedTable._id}`,
-      );
-      const updatedTable = tableResponse.data.data;
-
-      // Check if the selected table has products in its cart
-      if (updatedTable.cart && updatedTable.cart.length === 0) {
-        toast.error(
-          "Bàn này không có món trong giỏ. Vui lòng chọn bàn có món.",
+    } else {
+      try {
+        const tableResponse = await axios.get(
+          `http://localhost:5000/api/tables/${selectedTable._id}`,
         );
-        return;
-      }
+        const updatedTable = tableResponse.data.data;
 
-      // Proceed with sending the request if the table has products
-      const response = await axios.put(
-        `http://localhost:5000/api/tables/${selectedTable._id}/sendRequest`,
-      );
-      if (response.data.success) {
-        toast.success("Đã gửi yêu cầu làm món.");
-        // Cập nhật lại danh sách bàn sau khi gửi yêu cầu
-        fetchTables(); // Gọi lại hàm fetchTables để cập nhật trạng thái mới
-      } else {
+        if (updatedTable.cart && updatedTable.cart.length === 0) {
+          toast.error(
+            "Bàn này không có món trong giỏ. Vui lòng chọn bàn có món.",
+          );
+          return;
+        }
+
+        // Kiểm tra quantity và finalQuantity cho từng món
+        let allItemsServed = true; // Biến kiểm tra xem tất cả các món đều đã được phục vụ chưa
+        updatedTable.cart.forEach((cartItem) => {
+          cartItem.statusProduct.forEach((status) => {
+            if (status.doneQuantity < cartItem.quantity) {
+              allItemsServed = false; // Nếu có món chưa hoàn thành, cho phép gửi yêu cầu
+            }
+          });
+        });
+
+        if (allItemsServed) {
+          toast.info("Các món đã được phục vụ.");
+        } else {
+          // Chỉ gửi yêu cầu nếu có món chưa được phục vụ hết
+          const response = await axios.put(
+            `http://localhost:5000/api/tables/${selectedTable._id}/sendRequest`,
+          );
+          if (response.data.success) {
+            toast.success("Đã gửi yêu cầu làm món.");
+            fetchTables(); // Cập nhật lại danh sách bàn
+          } else {
+            toast.error("Có lỗi xảy ra khi gửi yêu cầu.");
+          }
+        }
+      } catch (error) {
+        console.error("Error sending request:", error);
         toast.error("Có lỗi xảy ra khi gửi yêu cầu.");
       }
-    } catch (error) {
-      console.error("Error sending request:", error);
-      toast.error("Có lỗi xảy ra khi gửi yêu cầu.");
     }
   };
+
 
   return (
     <div className="flex">
@@ -196,10 +212,12 @@ const OrderTable = () => {
                 key={table._id} // Sử dụng _id từ MongoDB
                 className={`flex h-20 w-40 cursor-pointer items-center justify-center border text-center font-josefin text-2xl font-bold ${
                   selectedTable?._id === table._id
-                    ? "bg-[#633c02] text-white" // Màu nâu đậm khi bàn được chọn
-                    : table.status === 2
-                      ? "bg-[#dea58d] text-gray-800" // Màu nâu nhạt khi bàn có sản phẩm
-                      : "bg-white text-gray-800" // Màu trắng khi bàn trống
+                    ? "bg-[#633c02] text-white" // Màu nâu đậm khi bàn đầu tiên được chọn
+                    : secondSelectedTable?._id === table._id
+                      ? "bg-[#633c02] text-white" // Màu nâu đậm khi bàn thứ hai được chọn
+                      : table.status === 2
+                        ? "bg-[#dea58d] text-gray-800" // Màu nâu nhạt khi bàn có sản phẩm
+                        : "bg-white text-gray-800" // Màu trắng khi bàn trống
                 } hover:bg-[#d88453]`}
                 onClick={() => handleTableClick(table)} // Chọn hoặc bỏ chọn bàn
               >
