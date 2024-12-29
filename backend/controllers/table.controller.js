@@ -130,7 +130,7 @@ export const addProductToCart = async (req, res) => {
         quantity,
         statusProduct: [
           { state: 0, doneQuantity: 0 }, // Khởi tạo với `doneQuantity` bằng 0
-        ], 
+        ],
       });
     }
 
@@ -429,5 +429,59 @@ export const getTableAsNotice = async (req, res) => {
       success: false,
       message: "Server Error",
     });
+  }
+};
+
+export const swapTables = async (req, res) => {
+  const { tableId1, tableId2 } = req.body; // Nhận id của hai bàn
+
+  try {
+    // Lấy thông tin của hai bàn từ cơ sở dữ liệu
+    const table1 = await Table.findById(tableId1);
+    const table2 = await Table.findById(tableId2);
+
+    if (!table1 || !table2) {
+      return res
+        .status(404)
+        .json({ success: false, message: "One or both tables not found" });
+    }
+
+    // Chuyển đổi dữ liệu của bàn
+    const table1Data = {
+      isActive: table2.isActive,
+      status: table2.status,
+      activeStep: table2.activeStep,
+      request: table2.request,
+      notice: table2.notice,
+      cart: table2.cart,
+    };
+
+    const table2Data = {
+      isActive: table1.isActive,
+      status: table1.status,
+      activeStep: table1.activeStep,
+      request: table1.request,
+      notice: table1.notice,
+      cart: table1.cart,
+    };
+
+    // Cập nhật dữ liệu cho hai bàn
+    table1.set(table1Data);
+    table2.set(table2Data);
+
+    // Lưu lại dữ liệu mới
+    await table1.save();
+    await table2.save();
+
+    // Trả về kết quả thành công
+    return res.status(200).json({
+      success: true,
+      message: "Tables swapped successfully",
+      table1: table1,
+      table2: table2,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
