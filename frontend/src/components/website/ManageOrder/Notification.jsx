@@ -84,7 +84,7 @@ const Notification = () => {
                   key={index}
                   className="mb-2 flex items-center justify-between rounded-lg bg-gray-100 p-3 shadow-md"
                 >
-                  <p className="w-[270px] font-josefin font-bold text-gray-800">
+                  <p className="w-[270px] font-josefin text-xl font-bold text-gray-800">
                     Bàn {table.name} đã làm món xong, yêu cầu phục vụ lấy món.
                   </p>
                   <button

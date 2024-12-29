@@ -8,29 +8,42 @@ import axios from "axios";
 
 const OrderTable = () => {
   const [tables, setTables] = useState([]);
-
   const [selectedTable, setSelectedTable] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Lấy danh sách bàn từ API khi component render
-  useEffect(() => {
-    const fetchTables = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/tables"); // Cập nhật URL API
-        if (response.data.success) {
-          setTables(response.data.data); // Lưu danh sách bàn vào state
-        } else {
-          toast.error("Không thể lấy danh sách bàn.");
-        }
-      } catch (error) {
-        console.error("Error fetching tables:", error);
-        toast.error("Có lỗi xảy ra khi lấy danh sách bàn.");
+  // Function to fetch tables
+  const fetchTables = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/tables");
+      if (response.data.success) {
+        const updatedTables = response.data.data.map((table) => {
+          // Kiểm tra nếu bàn có sản phẩm trong giỏ
+          if (table.cart && table.cart.length > 0) {
+            table.status = 2; // Đặt trạng thái là 2 nếu có sản phẩm
+          } else {
+            table.status = 1; // Đặt trạng thái là 1 nếu không có sản phẩm
+          }
+          return table;
+        });
+        setTables(updatedTables); // Cập nhật danh sách bàn vào state
+      } else {
+        toast.error("Không thể lấy danh sách bàn.");
       }
-    };
+    } catch (error) {
+      console.error("Error fetching tables:", error);
+      toast.error("Có lỗi xảy ra khi lấy danh sách bàn.");
+    }
+  };
 
-    fetchTables();
-  }, []);
+  // Lấy danh sách bàn và tiếp tục cập nhật mỗi 2 giây
+  useEffect(() => {
+    fetchTables(); // Fetch tables initially
+    const intervalId = setInterval(fetchTables, 2000); // Fetch every 2 seconds
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array ensures this runs once on mount
 
   // Xử lý thay đổi trạng thái bàn
   const handleTableClick = (table) => {
@@ -87,6 +100,44 @@ const OrderTable = () => {
     }
   };
 
+  const handleSendRequest = async () => {
+    if (!selectedTable) {
+      toast.error("Vui lòng chọn bàn để gửi món.");
+      return;
+    }
+
+    // First, reload the table data to ensure we have the latest state
+    try {
+      const tableResponse = await axios.get(
+        `http://localhost:5000/api/tables/${selectedTable._id}`,
+      );
+      const updatedTable = tableResponse.data.data;
+
+      // Check if the selected table has products in its cart
+      if (updatedTable.cart && updatedTable.cart.length === 0) {
+        toast.error(
+          "Bàn này không có món trong giỏ. Vui lòng chọn bàn có món.",
+        );
+        return;
+      }
+
+      // Proceed with sending the request if the table has products
+      const response = await axios.put(
+        `http://localhost:5000/api/tables/${selectedTable._id}/sendRequest`,
+      );
+      if (response.data.success) {
+        toast.success("Đã gửi yêu cầu làm món.");
+        // Cập nhật lại danh sách bàn sau khi gửi yêu cầu
+        fetchTables(); // Gọi lại hàm fetchTables để cập nhật trạng thái mới
+      } else {
+        toast.error("Có lỗi xảy ra khi gửi yêu cầu.");
+      }
+    } catch (error) {
+      console.error("Error sending request:", error);
+      toast.error("Có lỗi xảy ra khi gửi yêu cầu.");
+    }
+  };
+
   return (
     <div className="flex">
       {/* Bên trái: Danh sách bàn */}
@@ -130,7 +181,10 @@ const OrderTable = () => {
           >
             Xem giỏ hàng
           </button>
-          <button className="mx-4 mt-4 w-full bg-black py-3 text-lg font-bold text-white transition-transform duration-200 hover:scale-90">
+          <button
+            className="mx-4 mt-4 w-full bg-black py-3 text-lg font-bold text-white transition-transform duration-200 hover:scale-90"
+            onClick={handleSendRequest}
+          >
             Gửi món
           </button>
         </div>

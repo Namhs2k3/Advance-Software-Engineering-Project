@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import Table from "../models/table.model.js";
-import Product from "../models/product.model.js";
 // Get all tables
 export const getTables = async (req, res) => {
   try {
@@ -184,43 +183,124 @@ export const getTableById = async (req, res) => {
   }
 };
 
+// Remove a product from the table's cart
+export const removeProductFromCart = async (req, res) => {
+  const { id } = req.params;
+  const { productId } = req.body;
 
-export const getTableAsRequest = async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ success: false, message: "Invalid Table ID" });
+  }
+
   try {
-    const tables = await Table.find({ request: 1 })
-      .populate({
-        path: "cart.product", // Populate product details from the Product model
-        select: "name image price category", // Select fields to include
-        populate: {
-          path: "category", // Populate category details
-          select: "name", // Include only the category name
-        },
-      })
-      .lean(); // Convert Mongoose documents to plain JavaScript objects
+    const table = await Table.findById(id);
+    if (!table) {
+      return res.status(404).json({ success: false, message: "Table not found" });
+    }
 
-    // Process image paths
-    const tablesWithImages = tables.map((table) => ({
-      ...table,
-      cart: table.cart.map((item) => ({
-        ...item,
-        product: {
-          ...item.product,
-          image: item.product.image
-            ? `http://localhost:5000/assets/${item.product.image}`
-            : null, // Add full image path if exists
-        },
-      })),
-    }));
+    // Remove product from the cart
+    table.cart = table.cart.filter(
+      (item) => item.product.toString() !== productId
+    );
+
+    // Save the updated table
+    await table.save();
 
     res.status(200).json({
       success: true,
-      data: tablesWithImages,
+      message: "Product removed from cart",
+      data: table.cart,
     });
   } catch (error) {
-    console.error("Error in fetching tables with products: ", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Server Error",
+    console.error("Error in removing product from cart:", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// Update product quantity in the table's cart
+export const updateProductQuantity = async (req, res) => {
+  const { id } = req.params; // Table ID
+  const { productId, quantity } = req.body; // Product ID and new quantity
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ success: false, message: "Invalid Table ID" });
+  }
+
+  if (quantity < 1) {
+    return res.status(400).json({ success: false, message: "Invalid quantity" });
+  }
+
+  try {
+    const table = await Table.findById(id);
+    if (!table) {
+      return res.status(404).json({ success: false, message: "Table not found" });
+    }
+
+    // Find the product in the cart and update its quantity
+    const cartItem = table.cart.find((item) => item.product.toString() === productId);
+    if (!cartItem) {
+      return res.status(404).json({ success: false, message: "Product not found in cart" });
+    }
+
+    cartItem.quantity = quantity;
+
+    // Save the updated table
+    await table.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Product quantity updated successfully",
+      data: table.cart,
     });
+  } catch (error) {
+    console.error("Error updating product quantity:", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+export const sendRequestToChef = async (req, res) => {
+  const { id } = req.params;
+
+  // Kiểm tra ID bàn có hợp lệ không
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Invalid Table ID" });
+  }
+
+  try {
+    // Tìm bàn theo ID
+    const table = await Table.findById(id);
+    if (!table) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Table not found" });
+    }
+
+    // Kiểm tra nếu bàn có sản phẩm trong giỏ hàng không
+    if (!table.cart || table.cart.length === 0) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Bàn này không có món trong giỏ hàng.",
+        });
+    }
+
+    // Cập nhật trường request của bàn được chọn
+    const updatedTable = await Table.findByIdAndUpdate(
+      id,
+      { request: 1 }, // Set request thành 1
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Request sent to chef successfully",
+      data: updatedTable,
+    });
+  } catch (error) {
+    console.error("Error in sending request to chef:", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };

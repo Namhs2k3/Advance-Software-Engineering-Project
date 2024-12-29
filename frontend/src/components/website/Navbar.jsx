@@ -1,6 +1,6 @@
 import SearchItem from "./SearchItem";
 import Login from "./Login";
-import Notification from "./Notification";
+import Notification from "../website/ManageOrder/Notification";
 
 const Navbar = () => {
   return (

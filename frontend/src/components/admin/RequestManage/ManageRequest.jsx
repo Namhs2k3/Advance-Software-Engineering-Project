@@ -1,43 +1,39 @@
+// ManageRequest.js
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faPlus } from "@fortawesome/free-solid-svg-icons";
-import UpdateRequest from "./UpdateRequest"; // Component với progress bar
+import UpdateRequest from "./UpdateRequest";
 
 const ManageRequest = () => {
-  const [orders, setOrders] = useState([]);
+  const [tables, setTables] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isUpdateFormVisible, setUpdateFormVisible] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedTable, setSelectedTable] = useState(null);
 
-  // Fetch data from API
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchTables = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/tables/request",
-        );
+        const response = await axios.get("http://localhost:5000/api/tables");
         if (response.data.success) {
-          setOrders(response.data.data);
+          setTables(response.data.data);
         } else {
-          console.error("Failed to fetch orders");
+          console.error("Failed to fetch tables");
         }
       } catch (error) {
         console.error("Error fetching data from API:", error.message);
       }
     };
 
-    fetchOrders();
+    fetchTables();
   }, []);
 
-  // Filter orders based on search term
-  const filteredOrders = orders.filter((order) =>
-    order.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredTables = tables.filter(
+    (table) => table.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Open update form
-  const openUpdateForm = (order) => {
-    setSelectedOrder(order);
+  const openUpdateForm = (table) => {
+    setSelectedTable(table);
     setUpdateFormVisible(true);
   };
 
@@ -45,13 +41,13 @@ const ManageRequest = () => {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
       <div className="w-full max-w-5xl rounded-lg bg-white p-6 shadow-lg">
         <div className="mb-4 text-center text-2xl font-bold">
-          Quản lý đơn gọi món
+          Quản lý yêu cầu bàn
         </div>
 
         <div className="mb-4 flex items-center justify-between">
           <input
             type="text"
-            placeholder="Tìm kiếm bằng tên"
+            placeholder="Tìm kiếm bằng tên bàn"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-72 rounded-md border border-gray-300 p-2"
@@ -76,21 +72,21 @@ const ManageRequest = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order._id} className="border-b">
+              {filteredTables.map((table) => (
+                <tr key={table._id} className="border-b">
                   <td className="px-4 py-6 text-center font-bold">
-                    {order.name}
+                    {table.name}
                   </td>
-                  <td className="px-4 py-6 text-center">{order.activeStep}</td>
+                  <td className="px-4 py-6 text-center">{table.request}</td>
                   <td className="px-4 py-6 text-center">
-                    {new Date(order.createdAt).toLocaleDateString()}
+                    {new Date(table.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-6 text-center">
-                    {new Date(order.updatedAt).toLocaleDateString()}
+                    {new Date(table.updatedAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-6 text-center text-xl">
                     <button
-                      onClick={() => openUpdateForm(order)}
+                      onClick={() => openUpdateForm(table)}
                       className="rounded-full px-3 py-1 text-blue-400 hover:bg-slate-300"
                     >
                       <FontAwesomeIcon icon={faPen} />
@@ -103,9 +99,9 @@ const ManageRequest = () => {
         </div>
       </div>
 
-      {isUpdateFormVisible && selectedOrder && (
+      {isUpdateFormVisible && selectedTable && (
         <UpdateRequest
-          order={selectedOrder}
+          table={selectedTable}
           onClose={() => setUpdateFormVisible(false)}
         />
       )}

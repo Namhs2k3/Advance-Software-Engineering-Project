@@ -6,6 +6,9 @@ import {
   getTableById,
   getTables,
   updateTable,
+  removeProductFromCart,
+  updateProductQuantity,
+  sendRequestToChef,
 } from "../controllers/table.controller.js";
 
 const router = express.Router();
@@ -16,5 +19,9 @@ router.post("/", createTable);
 router.put("/:id/addProduct", addProductToCart);
 router.put("/:id", updateTable);
 router.delete("/:id", deleteTable);
+router.put("/:id/removeProduct", removeProductFromCart);
+router.put("/:id/updateProductQuantity", updateProductQuantity);
+router.put("/:id/sendRequest", sendRequestToChef);
+
 
 export default router;
