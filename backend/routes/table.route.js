@@ -9,6 +9,7 @@ import {
   removeProductFromCart,
   updateProductQuantity,
   sendRequestToChef,
+  getTableAsRequest,
 } from "../controllers/table.controller.js";
 
 const router = express.Router();
@@ -22,6 +23,6 @@ router.delete("/:id", deleteTable);
 router.put("/:id/removeProduct", removeProductFromCart);
 router.put("/:id/updateProductQuantity", updateProductQuantity);
 router.put("/:id/sendRequest", sendRequestToChef);
-
+router.get("/request", upload.single("image"), getTableAsRequest);
 
 export default router;

@@ -14,7 +14,9 @@ const ManageRequest = () => {
   useEffect(() => {
     const fetchTables = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/tables");
+        const response = await axios.get(
+          "http://localhost:5000/api/tables/request",
+        );
         if (response.data.success) {
           setTables(response.data.data);
         } else {
@@ -28,8 +30,8 @@ const ManageRequest = () => {
     fetchTables();
   }, []);
 
-  const filteredTables = tables.filter(
-    (table) => table.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTables = tables.filter((table) =>
+    table.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const openUpdateForm = (table) => {
