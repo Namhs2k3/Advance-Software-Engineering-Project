@@ -9,6 +9,8 @@ import axios from "axios";
 const OrderTable = () => {
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState(null);
+  const [secondSelectedTable, setSecondSelectedTable] = useState(null); // Bàn thứ 2 được chọn
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState(false); // Modal xác nhận chuyển bàn
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -35,7 +37,6 @@ const OrderTable = () => {
       toast.error("Có lỗi xảy ra khi lấy danh sách bàn.");
     }
   };
-  
 
   // Lấy danh sách bàn và tiếp tục cập nhật mỗi 2 giây
   useEffect(() => {
@@ -50,8 +51,44 @@ const OrderTable = () => {
   const handleTableClick = (table) => {
     if (selectedTable?._id === table._id) {
       setSelectedTable(null); // Nếu bàn đang được chọn, bỏ chọn
+    } else if (secondSelectedTable?._id === table._id) {
+      setSecondSelectedTable(null); // Nếu bàn thứ hai đang được chọn, bỏ chọn
     } else {
-      setSelectedTable(table); // Chọn bàn
+      if (!selectedTable) {
+        setSelectedTable(table); // Chọn bàn đầu tiên
+      } else {
+        setSecondSelectedTable(table); // Chọn bàn thứ hai
+      }
+    }
+  };
+  const handleOpenSwapModal = () => {
+    if (selectedTable && secondSelectedTable) {
+      setIsSwapModalOpen(true); // Mở modal xác nhận chuyển bàn
+    } else {
+      toast.error("Bạn cần chọn hai bàn để chuyển.");
+    }
+  };
+
+  const handleSwapTables = async () => {
+    try {
+      const response = await axios.put(
+        "http://localhost:5000/api/tables/swap",
+        {
+          tableId1: selectedTable._id,
+          tableId2: secondSelectedTable._id,
+        },
+      );
+
+      if (response.data.success) {
+        toast.success("Chuyển bàn thành công!");
+        fetchTables(); // Cập nhật danh sách bàn
+        setIsSwapModalOpen(false); // Đóng modal xác nhận
+        setSelectedTable(null); // Xóa bàn đã chọn
+        setSecondSelectedTable(null); // Xóa bàn thứ 2 đã chọn
+      }
+    } catch (error) {
+      console.error("Error swapping tables:", error);
+      toast.error("Có lỗi xảy ra khi chuyển bàn.");
     }
   };
 
@@ -145,7 +182,10 @@ const OrderTable = () => {
       <div className="flex w-5/12 flex-col border-r border-gray-300 p-4">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-josefin text-2xl font-bold">Danh sách bàn</h2>
-          <button className="bg-[#633c02] px-4 py-3 font-bold text-white transition-transform duration-200 hover:scale-90">
+          <button
+            className="bg-[#633c02] px-4 py-3 font-bold text-white transition-transform duration-200 hover:scale-90"
+            onClick={handleOpenSwapModal}
+          >
             Chuyển bàn
           </button>
         </div>
@@ -209,6 +249,41 @@ const OrderTable = () => {
       />
 
       {/* Modal xác nhận */}
+
+      {isSwapModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="flex h-80 w-full max-w-2xl flex-col items-center justify-center space-y-4 rounded-lg bg-white p-6 shadow-lg">
+            <span className="mb-4 text-5xl font-bold text-black">
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </span>
+
+            <h3 className="text-center font-oswald text-4xl font-bold text-gray-800">
+              Bạn có muốn chuyển bàn không?
+            </h3>
+
+            <span className="text-center font-josefin text-2xl font-bold text-gray-800">
+              Bàn {selectedTable?.name} và Bàn {secondSelectedTable?.name} sẽ
+              được chuyển cho nhau.
+            </span>
+
+            <div className="flex">
+              <button
+                className="mr-16 mt-4 bg-gray-300 px-14 pb-3 pt-4 text-xl font-bold text-gray-800 transition-transform duration-200 hover:scale-90"
+                onClick={() => setIsSwapModalOpen(false)} // Đóng modal nếu không đồng ý
+              >
+                Hủy
+              </button>
+              <button
+                className="mt-4 bg-[#633c02] px-14 pb-3 pt-4 text-xl font-bold text-white transition-transform duration-200 hover:scale-90"
+                onClick={handleSwapTables} // Gọi API để chuyển bàn
+              >
+                Đồng ý
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="flex h-80 w-full max-w-2xl flex-col items-center justify-center space-y-4 rounded-lg bg-white p-6 shadow-lg">
