@@ -5,28 +5,24 @@ import axios from "axios";
 import Loading from "../Loading";
 import { toast } from "react-toastify";
 
-const OrderMenu = ({ selectedTable, onAddToCart }) => {
+const OrderMenu = ({ selectedTable,secondSelectedTable, onAddToCart }) => {
   const [activeCategory, setActiveCategory] = useState("TẤT CẢ");
   const [categories, setCategories] = useState(["TẤT CẢ"]);
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [cart, setCart] = useState([]);
 
   const handleAddToCart = async (product) => {
-    if (!selectedTable) {
+    if (!selectedTable && !secondSelectedTable) {
       toast.error("Vui lòng chọn bàn trước khi thêm sản phẩm vào giỏ hàng!");
       return;
     }
 
-    // Log ID của bàn, sản phẩm và số lượng
-    console.log("Bàn ID:", selectedTable._id); // ID của bàn
-    console.log("Sản phẩm ID:", product._id); // ID của sản phẩm
-    console.log("Số lượng:", product.quantity); // Số lượng của sản phẩm
-
     try {
-      // Gửi yêu cầu API để thêm sản phẩm vào giỏ hàng của bàn
+      const tableId = selectedTable
+        ? selectedTable._id
+        : secondSelectedTable._id; // Ưu tiên selectedTable nếu cả hai đều được chọn
       const response = await axios.put(
-        `http://localhost:5000/api/tables/${selectedTable._id}/addProduct`,
+        `http://localhost:5000/api/tables/${tableId}/addProduct`,
         {
           productId: product._id,
           quantity: product.quantity,
@@ -35,7 +31,7 @@ const OrderMenu = ({ selectedTable, onAddToCart }) => {
 
       if (response.data.success) {
         toast.success("Thêm vào giỏ hàng thành công!");
-        // Cập nhật giỏ hàng nếu cần thiết (nếu bạn muốn làm điều này sau khi nhận phản hồi từ server)
+        // Cập nhật giỏ hàng nếu cần thiết
         if (onAddToCart) onAddToCart(response.data.updatedCartItem);
       } else {
         toast.error("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
@@ -45,6 +41,7 @@ const OrderMenu = ({ selectedTable, onAddToCart }) => {
       toast.error("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
     }
   };
+
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -170,7 +167,7 @@ const OrderMenu = ({ selectedTable, onAddToCart }) => {
             {filteredProducts.map((item) => (
               <div
                 key={item._id}
-                className="flex min-h-[190px] cursor-pointer items-center gap-4 rounded-xl border-2 border-gray-300 p-4 hover:bg-gray-100"
+                className="flex min-h-[190px] cursor-pointer items-center gap-4 rounded-xl border-2 border-gray-300 p-4 "
               >
                 {/* Ảnh sản phẩm */}
                 <img
@@ -194,7 +191,7 @@ const OrderMenu = ({ selectedTable, onAddToCart }) => {
                   </p>
                   <div className="mt-2 flex items-center gap-2">
                     <button
-                      className="flex h-8 w-8 items-center justify-center rounded-full border text-black hover:bg-gray-200"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black text-black hover:bg-gray-200"
                       onClick={() => handleQuantityChange(item._id, -1)}
                     >
                       <FontAwesomeIcon icon={faMinus} />
@@ -204,17 +201,17 @@ const OrderMenu = ({ selectedTable, onAddToCart }) => {
                       value={item.quantity}
                       onChange={(e) => handleInputChange(item._id, e)}
                       onBlur={() => handleBlur(item._id)}
-                      className="h-8 w-12 rounded-md border text-center"
+                      className="h-9 w-12 rounded-md border-2 border-black text-center"
                     />
                     <button
-                      className="flex h-8 w-8 items-center justify-center rounded-full border text-black hover:bg-gray-200"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black text-black hover:bg-gray-200"
                       onClick={() => handleQuantityChange(item._id, 1)}
                     >
                       <FontAwesomeIcon icon={faPlus} />
                     </button>
                     {/* Nút thêm vào giỏ hàng */}
                     <button
-                      className="ml-10 flex h-12 w-12 items-center justify-center rounded-full border bg-orange-950 font-bold text-white"
+                      className="ml-12 flex h-14 w-14 items-center justify-center rounded-full border bg-orange-950 font-bold text-white"
                       onClick={() => handleAddToCart(item)}
                     >
                       <FontAwesomeIcon icon={faPlus} />

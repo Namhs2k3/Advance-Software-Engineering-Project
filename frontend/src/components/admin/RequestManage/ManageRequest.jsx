@@ -11,6 +11,7 @@ const ManageRequest = () => {
   const [selectedTable, setSelectedTable] = useState(null);
 
   useEffect(() => {
+    // Hàm để fetch dữ liệu
     const fetchTables = async () => {
       try {
         const response = await axios.get(
@@ -26,8 +27,15 @@ const ManageRequest = () => {
       }
     };
 
+    // Fetch dữ liệu lần đầu
     fetchTables();
-  }, []);
+
+    // Set interval để fetch dữ liệu mỗi 2 giây
+    const intervalId = setInterval(fetchTables, 1000);
+
+    // Cleanup interval khi component bị unmount
+    return () => clearInterval(intervalId);
+  }, []); 
 
   const filteredTables = tables.filter((table) =>
     table.name.toLowerCase().includes(searchTerm.toLowerCase()),

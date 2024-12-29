@@ -38,24 +38,22 @@ export const createOrder = async (req, res) => {
   try {
     const {
       name,
-      address,
       number,
       email,
-      note,
       paymentMethod,
       discount,
-      finalPrice,
+      finalsell_Price, // Updated from finalPrice to finalsell_Price
       cart,
-      couponCode, // Thêm couponCode từ body
+      couponCode, // Coupon code from the body
     } = req.body;
 
-    if (!name || !address || !number || !email || !paymentMethod || !cart) {
+    if (!name || !number || !email || !paymentMethod || !cart) {
       return res.status(400).json({ message: "Thiếu thông tin cần thiết!" });
     }
 
     console.log("Received order data:", req.body);
 
-    // Xử lý cart và kiểm tra sản phẩm
+    // Process cart and validate products
     const updatedCart = await Promise.all(
       cart.map(async (item) => {
         const productId = new ObjectId(item.productId);
@@ -67,12 +65,12 @@ export const createOrder = async (req, res) => {
         return {
           product: product._id,
           quantity: item.quantity,
-          totalPrice: item.quantity * item.price,
+          totalPrice: item.quantity * item.sell_price, // Use sell_price for the product's price
         };
       })
     );
 
-    // Kiểm tra và cập nhật coupon (nếu có)
+    // Validate and apply coupon if provided
     if (couponCode) {
       try {
         const coupon = await Coupon.findOne({ code: couponCode.trim() });
@@ -106,16 +104,14 @@ export const createOrder = async (req, res) => {
       }
     }
 
-    // Tạo đơn hàng mới
+    // Create the new order with the provided data
     const newOrder = new Order({
       name,
-      address,
       number,
       email,
-      note,
       paymentMethod,
       discount: discount || 0,
-      finalPrice,
+      finalPrice: finalsell_Price, // Save final price correctly
       cart: updatedCart,
     });
 
@@ -134,7 +130,7 @@ export const createOrder = async (req, res) => {
 export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, address, number, email, note, paymentMethod } = req.body;
+    const { name, number, email, paymentMethod } = req.body;
 
     const order = await Order.findById(id);
     if (!order) {
@@ -142,10 +138,8 @@ export const updateOrder = async (req, res) => {
     }
 
     if (name) order.name = name;
-    if (address) order.address = address;
     if (number) order.number = number;
     if (email) order.email = email;
-    if (note) order.note = note;
     if (paymentMethod) order.paymentMethod = paymentMethod;
 
     const updatedOrder = await order.save();

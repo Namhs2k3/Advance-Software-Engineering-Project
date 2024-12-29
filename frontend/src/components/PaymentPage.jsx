@@ -1,88 +1,66 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faCartPlus } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faShop } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
-import img2 from "../../../backend/assets/20200003_2.png";
 
 const PaymentPage = () => {
   const location = useLocation();
-  const { cartItems: initialCartItems } = location.state || {};
+  const { selectedTable } = location.state || {}; // Nhận selectedTable từ location.state
 
-  // Static data for testing
-  const staticCartItems = [
-    {
-      productId: 1,
-      name: "Product 1",
-      price: 100000,
-      quantity: 2,
-      image: img2,
-    },
-    {
-      productId: 2,
-      name: "Product 2",
-      price: 200000,
-      quantity: 1,
-      image: img2,
-    },
-    {
-      productId: 4,
-      name: "Product 2",
-      price: 200000,
-      quantity: 1,
-      image: img2,
-    },
-    {
-      productId: 3,
-      name: "Product 2",
-      price: 200000,
-      quantity: 1,
-      image: img2,
-    },
-    {
-      productId: 5,
-      name: "Product 2",
-      price: 200000,
-      quantity: 1,
-      image: img2,
-    },
-    {
-      productId: 6,
-      name: "Product 2",
-      price: 200000,
-      quantity: 1,
-      image: img2,
-    },
-
-  ];
-
-  const staticValidCoupons = [
-    { code: "DISCOUNT10", discountValue: 10000, currentUsage: 0, maxUsage: 5 },
-    { code: "DISCOUNT20", discountValue: 20000, currentUsage: 0, maxUsage: 5 },
-  ];
-
-  const [cartItems, setCartItems] = useState(
-    initialCartItems || staticCartItems,
-  );
+  const [cartItems, setCartItems] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState(1);
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
-  const [validCoupons, setValidCoupons] = useState(staticValidCoupons);
+  const [validCoupons, setValidCoupons] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("tempCart", JSON.stringify(cartItems));
-  }, [cartItems]);
-
-  useEffect(() => {
-    const savedCart = localStorage.getItem("tempCart");
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
+    if (selectedTable) {
+      console.log("Selected Table:", selectedTable);
+      // Nếu selectedTable có giá trị, bạn có thể sử dụng nó ở đây (ví dụ, gửi yêu cầu API để lấy thông tin bàn)
+      axios
+        .get(`http://localhost:5000/api/tables/${selectedTable._id}`)
+        .then((response) => {
+          if (response.data.success) {
+            const { cart } = response.data.data;
+            setCartItems(
+              cart.map((item) => ({
+                productId: item.product._id,
+                name: item.product.name,
+                sell_price: item.product.sell_price,
+                quantity: item.quantity,
+                image: item.product.image,
+              })),
+            );
+          } else {
+            toast.error("Không thể lấy thông tin bàn!");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching table data:", error);
+          toast.error("Có lỗi xảy ra khi tải dữ liệu bàn.");
+        });
     }
+  }, [selectedTable]); // Chạy lại khi selectedTable thay đổi
+
+  useEffect(() => {
+    // Lấy danh sách coupon từ API
+    const fetchCoupons = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/coupons");
+        setValidCoupons(response.data.data);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách coupon:", error);
+      }
+    };
+    fetchCoupons();
   }, []);
 
   useEffect(() => {
+    // Kiểm tra mã giảm giá mỗi khi couponCode thay đổi
     if (couponCode.trim() === "") {
-      setDiscount(0); // If no coupon code, set discount to 0
+      setDiscount(0); // Nếu không có mã, giảm giá là 0
     } else {
       const coupon = validCoupons.find((c) => c.code === couponCode);
       if (coupon) {
@@ -93,36 +71,15 @@ const PaymentPage = () => {
           toast.error(
             "Mã giảm giá đã hết số lượng sử dụng, vui lòng thử mã khác.",
           );
-          setDiscount(0); // Don't apply discount if coupon is invalid
+          setDiscount(0); // Không áp dụng mã giảm giá
         } else {
-          setDiscount(coupon.discountValue); // Apply discount if valid
+          setDiscount(coupon.discountValue); // Nếu mã hợp lệ và còn số lần sử dụng, áp dụng giảm giá
         }
       } else {
-        setDiscount(0); // If coupon is invalid, set discount to 0
+        setDiscount(0); // Nếu mã không hợp lệ, giảm giá là 0
       }
     }
-  }, [couponCode, validCoupons]);
-
-  if (!cartItems || cartItems.length === 0) {
-    return (
-      <div className="success-container mb-28 mt-20 flex flex-col place-content-center items-center sm:mb-32 sm:mt-32">
-        <FontAwesomeIcon icon={faCartPlus} className="text-7xl text-black" />
-        <h1 className="mt-4 text-center font-josefin text-3xl font-bold">
-          Giỏ hàng hiện đang không có sản phẩm nào!!!
-        </h1>
-        <p className="mt-2 text-center font-josefin text-lg font-bold">
-          Vui lòng quay trở lại trang chủ để cập nhật giỏ hàng trước khi vào
-          trang thanh toán.
-        </p>
-        <a
-          href="/menu"
-          className="mt-8 rounded-lg bg-[#d88453] px-6 pb-2 pt-4 font-josefin text-2xl text-white hover:rounded-3xl hover:bg-[#633c02]"
-        >
-          Quay trở lại trang chủ
-        </a>
-      </div>
-    );
-  }
+  }, [couponCode, validCoupons]); // Chạy lại khi couponCode hoặc validCoupons thay đổi
 
   const handlePaymentOptionClick = (paymentmethod) => {
     setSelectedPayment(paymentmethod);
@@ -153,12 +110,14 @@ const PaymentPage = () => {
     const numericValue = parseInt(value, 10);
 
     if (!value) {
+      // Khi người dùng xóa hết, giữ trống tạm thời
       setCartItems((prevCartItems) =>
         prevCartItems.map((item) =>
           item.productId === productId ? { ...item, quantity: "" } : item,
         ),
       );
     } else if (!isNaN(numericValue) && numericValue >= 1) {
+      // Khi nhập số hợp lệ
       setCartItems((prevCartItems) =>
         prevCartItems.map((item) =>
           item.productId === productId
@@ -173,8 +132,8 @@ const PaymentPage = () => {
     setCartItems(cartItems.filter((item) => item.productId !== productId));
   };
 
-  const calculatedTotalPrice = cartItems.reduce(
-    (total, item) => total + item.quantity * item.price,
+  const calculatedTotalsell_Price = cartItems.reduce(
+    (total, item) => total + item.quantity * item.sell_price,
     0,
   );
 
@@ -188,7 +147,7 @@ const PaymentPage = () => {
         toast.error(
           "Mã giảm giá đã hết số lượng sử dụng, vui lòng thử mã khác.",
         );
-        setDiscount(0); // Don't apply discount if coupon is invalid
+        setDiscount(0); // Không áp dụng mã giảm giá
       } else {
         setDiscount(coupon.discountValue);
         toast.success("Mã giảm giá đã được áp dụng thành công!");
@@ -202,46 +161,67 @@ const PaymentPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Prepare the cart data with correct product ids
     const orderData = {
       name: e.target.name.value,
-      address: e.target.address.value,
       number: e.target.number.value,
       email: e.target.email.value,
-      note: e.target.note.value,
       paymentMethod: selectedPayment === 1 ? "Online Payment" : "COD",
       discount: discount,
-      finalPrice: finalPrice,
+      finalsell_Price: finalsell_Price,
       couponCode: couponCode || null,
       cart: cartItems.map((item) => ({
-        productId: item.productId,
+        productId: item.productId, // Đây là nơi bạn gửi id sản phẩm
         quantity: item.quantity,
-        price: item.price,
+        sell_price: item.sell_price,
       })),
     };
 
+    // Log toàn bộ dữ liệu orderData để kiểm tra
     console.log("Dữ liệu gửi lên server:", orderData);
 
     try {
-      // Simulating an API request
-      toast.success("Đặt hàng thành công!");
+      // Post the order data
+      const response = await axios.post(
+        "http://localhost:5000/api/orders",
+        orderData,
+      );
+      toast(response.data.message);
+
+      // Reset the table cart after successful payment
+      await axios.put(`http://localhost:5000/api/tables/${selectedTable._id}`, {
+        cart: [], // Reset the cart
+        isActive: 1,
+        status: 1,
+        activeStep: 0,
+        request: 0,
+        notice: 0,
+      });
+
+      // Clear the temporary cart from localStorage
       localStorage.removeItem("tempCart");
-      window.location.href = "/order-success";
+
+      // Redirect after successful order and reset
+      window.location.href = "/order-success"; // Redirect after successful order
     } catch (error) {
       console.error("Lỗi khi tạo đơn hàng:", error);
       toast.error("Đã có lỗi xảy ra, vui lòng thử lại.");
     }
   };
 
-  const finalPrice = Math.max(calculatedTotalPrice - discount, 0);
+
+  const finalsell_Price = Math.max(calculatedTotalsell_Price - discount, 0);
 
   return (
-    <div className="mx-auto mt-8 max-w-[1200px] px-4">
+    <div className="mx-auto max-w-[1200px] pt-8 px-4 pb-20">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-10">
+        {/* Phần thông tin khách hàng chiếm 6 cột */}
         <div className="payment-left order-2 col-span-10 sm:order-1 sm:col-span-6">
           <h3 className="mb-4 pt-4 font-josefin text-4xl font-bold">
             Thông tin khách hàng
           </h3>
           <form onSubmit={handleSubmit} className="input-group space-y-4">
+            {/* Các trường thông tin */}
             <div className="input-payment">
               <input
                 type="text"
@@ -267,11 +247,14 @@ const PaymentPage = () => {
                 required
               />
             </div>
-            
+
+            {/* Phương thức thanh toán */}
             <div className="payment-method">
               <h4 className="mb-4 py-3 font-josefin text-4xl font-bold">
                 Phương tiện thanh toán
               </h4>
+
+              {/* Các lựa chọn phương thức thanh toán */}
               <button
                 type="button"
                 className={`payment-option mb-4 flex w-full cursor-pointer items-center rounded-2xl border p-4 transition-colors duration-300 hover:text-black ${
@@ -318,6 +301,8 @@ const PaymentPage = () => {
                   </span>
                 </label>
               </button>
+
+              {/* Option 2 */}
               <button
                 type="button"
                 className={`payment-option flex w-full cursor-pointer items-center rounded-2xl border p-4 transition-colors duration-300 hover:text-black ${
@@ -365,19 +350,21 @@ const PaymentPage = () => {
                 </label>
               </button>
             </div>
+
             <button
               type="submit"
               className="mt-8 h-16 w-full rounded-2xl bg-black px-4 font-josefin text-xl font-bold text-white transition-transform duration-200 hover:scale-95"
             >
-              Xác nhận đặt hàng {finalPrice.toLocaleString()}₫
+              ĐẶT NGAY {finalsell_Price.toLocaleString()}₫
             </button>
           </form>
         </div>
+        {/* Phần thông tin giỏ hàng chiếm 4 cột */}
         <div className="order-1 col-span-10 sm:order-2 sm:col-span-4">
           <h3 className="name-option-payment mb-2 pt-4 font-josefin text-[32px] text-xl font-bold">
             Thông tin sản phẩm
           </h3>
-          <div className="mb-4 max-h-[390px] overflow-y-auto rounded-lg bg-white p-4">
+          <div className="mb-4 max-h-[400px] overflow-y-auto rounded-lg bg-white p-4">
             {cartItems.map((item) => (
               <div
                 key={item.productId}
@@ -390,8 +377,8 @@ const PaymentPage = () => {
                     className="h-20% w-20% rounded-lg object-cover"
                   />
                 </div>
-                <div className="w-3/5 px-4">
-                  <span className="block truncate font-josefin text-2xl font-bold text-[#00561e]">
+                <div className="w-6/12 px-4">
+                  <span className="block truncate font-medium">
                     {item.name}
                   </span>
                   <div className="mt-2 flex items-center space-x-2 pt-6">
@@ -430,16 +417,15 @@ const PaymentPage = () => {
                     className="absolute right-0 top-0 text-2xl text-gray-400 hover:text-black"
                     onClick={() => removeItem(item.productId)}
                   >
-                    <FontAwesomeIcon icon={faTrash} />
+                    <FontAwesomeIcon icon={faTimes} />
                   </button>
-                  <span className="block pt-16 font-semibold text-black">
-                    {(item.quantity * item.price).toLocaleString()}₫
+                  <span className="block pt-16 font-medium">
+                    {(item.quantity * item.sell_price).toLocaleString()}₫
                   </span>
                 </div>
               </div>
             ))}
           </div>
-
           <div className="coupon-section mb-4 flex items-center space-x-2">
             <input
               type="text"
@@ -462,7 +448,7 @@ const PaymentPage = () => {
           </div>
           <div className="mb-[5px] flex justify-between font-josefin text-[18px] font-semibold">
             <span>TỔNG CỘNG</span>
-            <span>{finalPrice.toLocaleString()}₫</span>
+            <span>{finalsell_Price.toLocaleString()}₫</span>
           </div>
         </div>
       </div>

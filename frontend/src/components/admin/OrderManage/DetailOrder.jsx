@@ -8,10 +8,8 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
   const [customerInfo, setCustomerInfo] = useState({
     name: "",
     number: "",
-    address: "",
     email: "",
     paymentMethod: "",
-    note: "",
     discount: "",
   });
 
@@ -21,10 +19,8 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
       setCustomerInfo({
         name: order.name || "",
         number: order.number || "",
-        address: order.address || "",
         email: order.email || "",
         paymentMethod: order.paymentMethod || "",
-        note: order.note || "",
         discount: order.discount || "",
       });
     }
@@ -42,14 +38,12 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
   // Xử lý lưu thông tin
   const handleSave = async () => {
     try {
-      const { name, number, address, note } = customerInfo;
+      const { name, number, } = customerInfo;
       const response = await axios.put(
         `http://localhost:5000/api/orders/${order._id}`,
         {
           name,
           number,
-          address,
-          note,
         },
       );
       toast.success("Cập nhật thông tin thành công!");
@@ -106,17 +100,6 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
               />
 
               <label className="mb-2 block font-josefin text-2xl font-bold">
-                Địa chỉ
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={customerInfo.address}
-                onChange={handleInputChange}
-                className="mb-4 w-full rounded-md border border-gray-300 p-2"
-              />
-
-              <label className="mb-2 block font-josefin text-2xl font-bold">
                 Email
               </label>
               <input
@@ -153,17 +136,6 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
                 <option value="Online Payment">Online Payment</option>
                 <option value="COD">COD</option>
               </select>
-
-              <label className="mb-2 block font-josefin text-2xl font-bold">
-                Ghi chú
-              </label>
-              <textarea
-                name="note"
-                value={customerInfo.note}
-                onChange={handleInputChange}
-                maxLength={500}
-                className="mb-4 max-h-64 w-full overflow-y-auto rounded-md border border-gray-300 p-2"
-              />
             </div>
 
             {/* Right Section - Product List */}

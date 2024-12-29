@@ -2,13 +2,11 @@ import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  address: { type: String, required: true },
   number: { type: String, required: true },
   email: { type: String, required: true },
-  note: { type: String, required: false },
   paymentMethod: { type: String, required: true },
-  discount: { type: Number, default: 0 }, // Thêm giảm giá
-  finalPrice: { type: Number, required: true }, // Tổng tiền cuối
+  discount: { type: Number, default: 0 }, 
+  finalPrice: { type: Number, required: true }, 
   cart: [
     {
       product: {

@@ -7,7 +7,6 @@ const Notification = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
-  // Fetch data from API
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -24,8 +23,15 @@ const Notification = () => {
       }
     };
 
+    // Initial fetch
     fetchNotifications();
-  }, []);
+
+    // Set interval to fetch every 2 seconds
+    const intervalId = setInterval(fetchNotifications, 2000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array to run on mount
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
@@ -79,23 +85,24 @@ const Notification = () => {
 
       {/* Sidebar */}
       <div
-        className={`fixed right-0 top-0 z-50 h-full w-96 transform bg-white shadow-lg transition-transform duration-300 ${
+        className={`fixed right-0 top-0 z-50 h-full w-[450px] transform bg-white shadow-lg transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="p-4">
-          <h2 className="mb-4 text-xl font-bold">Notifications</h2>
+          <h2 className="mb-4 text-2xl font-bold">Thông báo phục vụ món</h2>
           {notifications.map((table, index) => (
             <div
               key={index}
-              className="mb-2 flex items-center justify-between rounded-lg bg-gray-100 p-3 shadow-md"
+              className="mb-4 flex items-center justify-between rounded-lg bg-gray-100 p-3 shadow-md"
             >
-              <p className="w-[270px] font-josefin text-xl font-bold text-gray-800">
-                Bàn {table.name} đã làm món xong, yêu cầu phục vụ lấy món.
+              <p className="w-[320px] font-josefin text-2xl font-bold text-gray-800">
+                Bàn <span className="!text-red-600">{table.name}</span> đã làm món xong, yêu cầu phục vụ
+                lấy món.
               </p>
               <button
                 onClick={() => handleDelete(index, table._id)}
-                className="text-2xl text-gray-400 hover:text-red-700"
+                className="text-3xl text-gray-400 hover:text-red-700"
               >
                 <FontAwesomeIcon icon={faTrash} />
               </button>

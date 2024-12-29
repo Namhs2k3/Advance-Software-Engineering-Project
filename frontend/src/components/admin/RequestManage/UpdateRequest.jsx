@@ -152,36 +152,42 @@ const UpdateRequest = ({ table, onClose }) => {
 
           <div className="mx-auto h-[350px] max-w-4xl overflow-y-scroll">
             <div className="grid grid-cols-2 gap-4 p-4">
-              {cart?.map((cartItem, index) => (
-                <div
-                  key={index}
-                  className="flex min-h-[180px] items-center gap-4 rounded-xl border-2 border-gray-300 p-4"
-                >
-                  <img
-                    src={cartItem.product?.image}
-                    alt={cartItem.product?.name}
-                    className="h-32 w-auto object-cover"
-                  />
-                  <div className="flex-1">
-                    <h6 className="line-clamp-2 h-16 pb-4 text-lg font-bold text-[#00561e]">
-                      {cartItem.product?.name}
-                    </h6>
-                    <p className="pb-4 text-lg font-bold text-[#925802]">
-                      Số lượng:{" "}
-                      {cartItem.quantity -
-                        cartItem.statusProduct[0]?.doneQuantity}
-                    </p>
-                    <p className="text-lg font-bold text-black">
-                      Trạng thái:{" "}
-                      {activeStep === 0
-                        ? "Đã nhận"
-                        : activeStep === 1
-                          ? "Đang nấu"
-                          : "Hoàn thành"}
-                    </p>
+              {cart?.map((cartItem, index) => {
+                const remainingQuantity =
+                  cartItem.quantity - cartItem.statusProduct[0]?.doneQuantity;
+                if (remainingQuantity === 0) {
+                  return null; // Không hiển thị sản phẩm nếu số lượng còn lại là 0
+                }
+
+                return (
+                  <div
+                    key={index}
+                    className="flex min-h-[180px] items-center gap-4 rounded-xl border-2 border-gray-300 p-4"
+                  >
+                    <img
+                      src={cartItem.product?.image}
+                      alt={cartItem.product?.name}
+                      className="h-32 w-auto object-cover"
+                    />
+                    <div className="flex-1">
+                      <h6 className="line-clamp-2 h-16 pb-4 text-lg font-bold text-[#00561e]">
+                        {cartItem.product?.name}
+                      </h6>
+                      <p className="pb-4 text-lg font-bold text-[#925802]">
+                        Số lượng: {remainingQuantity}
+                      </p>
+                      <p className="text-lg font-bold text-black">
+                        Trạng thái:{" "}
+                        {activeStep === 0
+                          ? "Đã nhận"
+                          : activeStep === 1
+                            ? "Đang nấu"
+                            : "Hoàn thành"}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -189,13 +195,13 @@ const UpdateRequest = ({ table, onClose }) => {
             <button
               onClick={handleBack}
               disabled={activeStep === 0}
-              className="rounded-md bg-gray-300 px-4 py-2 text-gray-700 disabled:opacity-50"
+              className="rounded-md bg-gray-300 px-8 py-3 text-2xl text-black transition-transform duration-200 hover:scale-90 disabled:opacity-50"
             >
               Quay lại
             </button>
             <button
               onClick={handleNext}
-              className="rounded-md bg-blue-500 px-4 py-2 text-white"
+              className="rounded-md bg-blue-500 px-8 py-3 text-2xl text-white transition-transform duration-200 hover:scale-90"
             >
               {activeStep === steps.length - 1 ? "Hoàn thành" : "Tiếp theo"}
             </button>

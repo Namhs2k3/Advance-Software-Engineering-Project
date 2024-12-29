@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
   const navigate = useNavigate();
@@ -80,9 +81,6 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
   const handleRemoveItem = async (id) => {
     const productId = cart.find((item) => item._id === id)?.product._id;
 
-    console.log("Selected Table ID:", selectedTable._id);
-    console.log("Product ID to remove:", productId);
-
     if (!productId) {
       console.error("Product ID not found!");
       return;
@@ -132,12 +130,28 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
     }
   };
 
+  const canCheckout = () => {
+    return cart.every(
+      (item) =>
+        item.quantity ===
+        item.statusProduct.reduce((sum, sp) => sum + sp.doneQuantity, 0),
+    );
+  };
 
 
 
   const handleCheckout = () => {
-    navigate("/payment"); // Chuyển hướng đến trang Payment
+    if (canCheckout()) {
+      navigate("/payment", {
+        state: {
+          selectedTable,
+        },
+      });
+    } else {
+      toast.error("Không thể thanh toán, có món chưa phục vụ xong!"); // Hiển thị thông báo lỗi
+    }
   };
+
 
   const totalPrice = cart.reduce(
     (total, item) => total + item.product.price * item.quantity,

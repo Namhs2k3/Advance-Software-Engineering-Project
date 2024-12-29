@@ -130,34 +130,57 @@ const OrderTable = () => {
     }
   };
 
-  // Xử lý mở giỏ hàng
   const handleViewCart = () => {
+    let activeTable = null;
+
     if (selectedTable && secondSelectedTable) {
-      toast.error("Bạn không thể xem giỏ hàng khi đã chọn hai bàn.");
+      toast.error(
+        "Chỉ có thể xem giỏ hàng cho một bàn. Vui lòng bỏ chọn một bàn.",
+      );
+      return;
     } else if (selectedTable) {
-      setIsSidebarOpen(true); // Mở giỏ hàng nếu chỉ có một bàn được chọn
+      activeTable = selectedTable; // Nếu có bàn đầu tiên được chọn
+    } else if (secondSelectedTable) {
+      activeTable = secondSelectedTable; // Nếu có bàn thứ hai được chọn
     } else {
-      toast.error("Hãy chọn bàn để xem giỏ hàng!"); // Thông báo nếu chưa chọn bàn
+      toast.error("Hãy chọn một bàn để xem giỏ hàng.");
+      return;
     }
+
+    setIsSidebarOpen(true); // Mở giỏ hàng
+    console.log("Đang mở giỏ hàng của bàn:", activeTable.name); // Debug
   };
 
   const handleSendRequest = async () => {
-    if (selectedTable && secondSelectedTable) {
-      toast.error("Bạn không thể gửi món khi đã chọn hai bàn.");
-    } else if (!selectedTable) {
+    // Kiểm tra nếu không có bàn được chọn
+    if (!selectedTable && !secondSelectedTable) {
       toast.error("Vui lòng chọn bàn để gửi món.");
-    } else {
+      return;
+    }
+
+    const tablesToSendRequest = []; // Mảng lưu các bàn cần gửi yêu cầu
+
+    // Kiểm tra nếu có bàn được chọn
+    if (selectedTable) {
+      tablesToSendRequest.push(selectedTable);
+    }
+    if (secondSelectedTable) {
+      tablesToSendRequest.push(secondSelectedTable);
+    }
+
+    // Lặp qua các bàn đã chọn để kiểm tra và gửi yêu cầu
+    for (let table of tablesToSendRequest) {
       try {
         const tableResponse = await axios.get(
-          `http://localhost:5000/api/tables/${selectedTable._id}`,
+          `http://localhost:5000/api/tables/${table._id}`,
         );
         const updatedTable = tableResponse.data.data;
 
         if (updatedTable.cart && updatedTable.cart.length === 0) {
           toast.error(
-            "Bàn này không có món trong giỏ. Vui lòng chọn bàn có món.",
+            `Bàn ${table.name} không có món trong giỏ. Vui lòng chọn bàn có món.`,
           );
-          return;
+          continue; // Bỏ qua bàn này nếu không có món
         }
 
         // Kiểm tra quantity và finalQuantity cho từng món
@@ -171,26 +194,25 @@ const OrderTable = () => {
         });
 
         if (allItemsServed) {
-          toast.info("Các món đã được phục vụ.");
+          toast.info(`Các món ở bàn ${table.name} đã được phục vụ.`);
         } else {
           // Chỉ gửi yêu cầu nếu có món chưa được phục vụ hết
           const response = await axios.put(
-            `http://localhost:5000/api/tables/${selectedTable._id}/sendRequest`,
+            `http://localhost:5000/api/tables/${table._id}/sendRequest`,
           );
           if (response.data.success) {
-            toast.success("Đã gửi yêu cầu làm món.");
+            toast.success(`Đã gửi yêu cầu làm món.`);
             fetchTables(); // Cập nhật lại danh sách bàn
           } else {
-            toast.error("Có lỗi xảy ra khi gửi yêu cầu.");
+            toast.error(`Có lỗi xảy ra khi gửi yêu cầu cho bàn ${table.name}.`);
           }
         }
       } catch (error) {
-        console.error("Error sending request:", error);
-        toast.error("Có lỗi xảy ra khi gửi yêu cầu.");
+        console.error(`Error sending request for table ${table.name}:`, error);
+        toast.error(`Có lỗi xảy ra khi gửi yêu cầu cho bàn ${table.name}.`);
       }
     }
   };
-
 
   return (
     <div className="flex">
@@ -256,14 +278,16 @@ const OrderTable = () => {
 
       {/* Bên phải: Thực đơn */}
       <div className="w-2/3">
-        <OrderMenu selectedTable={selectedTable} />
+        <OrderMenu
+          selectedTable={selectedTable}
+          secondSelectedTable={secondSelectedTable}
+        />
       </div>
 
-      {/* Sidebar Cart */}
       <SidebarCart
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        selectedTable={selectedTable}
+        selectedTable={selectedTable || secondSelectedTable}
       />
 
       {/* Modal xác nhận */}
