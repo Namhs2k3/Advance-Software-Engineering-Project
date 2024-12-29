@@ -57,7 +57,7 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-      <div className="relative h-[570px] w-full max-w-7xl rounded-lg bg-white p-6 shadow-lg">
+      <div className="relative h-[570px] w-full max-w-4xl rounded-lg bg-white p-6 shadow-lg">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -75,7 +75,7 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
         <form>
           <div className="flex space-x-6">
             {/* Left Section - Customer Information */}
-            <div className="w-2/5">
+            <div className="w-1/2">
               <label className="mb-2 block font-josefin text-2xl font-bold">
                 Tên khách hàng
               </label>
@@ -110,20 +110,6 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
                 className="mb-4 w-full rounded-md border border-gray-300 p-2"
                 disabled
               />
-
-              <div className="mt-8 flex justify-end">
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  className="rounded bg-blue-500 px-5 py-2 font-josefin text-xl text-white transition-transform duration-200 hover:scale-95"
-                >
-                  Lưu thông tin
-                </button>
-              </div>
-            </div>
-
-            {/* Center Section - Payment Method and Note */}
-            <div className="w-1/3">
               <label className="mb-2 block font-josefin text-2xl font-bold">
                 Phương thức thanh toán
               </label>
@@ -136,10 +122,20 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
                 <option value="Online Payment">Online Payment</option>
                 <option value="COD">COD</option>
               </select>
+
+              <div className="mt-8 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className="rounded bg-blue-500 px-5 py-2 font-josefin text-xl text-white transition-transform duration-200 hover:scale-95"
+                >
+                  Lưu thông tin
+                </button>
+              </div>
             </div>
 
             {/* Right Section - Product List */}
-            <div className="w-1/3">
+            <div className="w-1/2">
               <h3 className="mb-2 text-xl font-semibold">Chi tiết sản phẩm</h3>
               <div className="max-h-80 space-y-4 overflow-y-auto">
                 {order.cart.map((item, index) => (
