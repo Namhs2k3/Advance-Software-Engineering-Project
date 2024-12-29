@@ -189,13 +189,17 @@ export const removeProductFromCart = async (req, res) => {
   const { productId } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ success: false, message: "Invalid Table ID" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Invalid Table ID" });
   }
 
   try {
     const table = await Table.findById(id);
     if (!table) {
-      return res.status(404).json({ success: false, message: "Table not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Table not found" });
     }
 
     // Remove product from the cart
@@ -223,23 +227,33 @@ export const updateProductQuantity = async (req, res) => {
   const { productId, quantity } = req.body; // Product ID and new quantity
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ success: false, message: "Invalid Table ID" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Invalid Table ID" });
   }
 
   if (quantity < 1) {
-    return res.status(400).json({ success: false, message: "Invalid quantity" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid quantity" });
   }
 
   try {
     const table = await Table.findById(id);
     if (!table) {
-      return res.status(404).json({ success: false, message: "Table not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Table not found" });
     }
 
     // Find the product in the cart and update its quantity
-    const cartItem = table.cart.find((item) => item.product.toString() === productId);
+    const cartItem = table.cart.find(
+      (item) => item.product.toString() === productId
+    );
     if (!cartItem) {
-      return res.status(404).json({ success: false, message: "Product not found in cart" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found in cart" });
     }
 
     cartItem.quantity = quantity;
@@ -279,12 +293,10 @@ export const sendRequestToChef = async (req, res) => {
 
     // Kiểm tra nếu bàn có sản phẩm trong giỏ hàng không
     if (!table.cart || table.cart.length === 0) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Bàn này không có món trong giỏ hàng.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Bàn này không có món trong giỏ hàng.",
+      });
     }
 
     // Cập nhật trường request của bàn được chọn
@@ -342,5 +354,76 @@ export const getTableAsRequest = async (req, res) => {
       success: false,
       message: "Server Error",
     });
+  }
+};
+
+export const getTableAsNotice = async (req, res) => {
+  try {
+    const tables = await Table.find({ notice: 1 })
+      .populate({
+        path: "cart.product", // Populate product details from the Product model
+        select: "name image price category", // Select fields to include
+        populate: {
+          path: "category", // Populate category details
+          select: "name", // Include only the category name
+        },
+      })
+      .lean(); // Convert Mongoose documents to plain JavaScript objects
+
+    // Process image paths
+    const tablesWithImages = tables.map((table) => ({
+      ...table,
+      cart: table.cart.map((item) => ({
+        ...item,
+        product: {
+          ...item.product,
+          image: item.product.image
+            ? `http://localhost:5000/assets/${item.product.image}`
+            : null, // Add full image path if exists
+        },
+      })),
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: tablesWithImages,
+    });
+  } catch (error) {
+    console.error("Error in fetching tables with products: ", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const updateNotice = async (req, res) => {
+  const { id } = req.params; // Lấy ID từ params
+  const updates = req.body; // Lấy thông tin cần update từ body
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Invalid Table ID" });
+  }
+
+  try {
+    const updatedTable = await Table.findByIdAndUpdate(
+      id,
+      updates, // Thông tin cần cập nhật (trong trường hợp này là { notice: 0 })
+      { new: true } // Trả về document đã được cập nhật
+    );
+
+    if (!updatedTable) {
+      return res.status(404).json({
+        success: false,
+        message: "Table not found",
+      });
+    }
+
+    res.status(200).json({ success: true, data: updatedTable });
+  } catch (error) {
+    console.error("Error in updating table: ", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
