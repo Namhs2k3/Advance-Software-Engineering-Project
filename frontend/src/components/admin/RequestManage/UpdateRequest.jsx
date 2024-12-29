@@ -6,12 +6,24 @@ const steps = ["Chờ", "Đang chuẩn bị", "Hoàn thành"]; // 3 steps
 
 const UpdateRequest = ({ table, onClose }) => {
   const [activeStep, setActiveStep] = useState(table.activeStep);
+  const [cart, setCart] = useState(table.cart);
 
   const handleNext = () => {
     if (activeStep < steps.length - 1) {
+      // Chuyển đến bước tiếp theo
       setActiveStep((prev) => prev + 1);
     } else {
-      onClose(); // Đóng modal nếu đã hoàn thành bước cuối cùng
+      // Nếu đã hoàn thành, quay lại bước đầu tiên và cập nhật trạng thái sản phẩm
+      setActiveStep(0);
+
+      // Cập nhật trạng thái của tất cả các sản phẩm trong cart
+      const updatedCart = cart.map((item) => ({
+        ...item,
+        productStatus: 1, // Đặt trạng thái sản phẩm là đã hoàn thành (1)
+      }));
+
+      setCart(updatedCart); // Cập nhật lại cart
+      onClose(); // Đóng modal
     }
   };
 
@@ -23,7 +35,7 @@ const UpdateRequest = ({ table, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="h-[650px] w-full max-w-3xl rounded-lg bg-white p-6 shadow-lg">
+      <div className="h-[650px] w-full max-w-4xl rounded-lg bg-white p-6 shadow-lg">
         <div className="flex justify-between">
           <h2 className="text-xl font-bold">Yêu cầu của bàn {table.name}</h2>
           <button
@@ -77,27 +89,32 @@ const UpdateRequest = ({ table, onClose }) => {
             </div>
           </div>
 
-          <div className="mx-auto h-[350px] max-w-3xl overflow-y-scroll">
+          <div className="mx-auto h-[350px] max-w-4xl overflow-y-scroll">
             <div className="grid grid-cols-2 gap-4 p-4">
-              {table?.cart?.map((cart, index) => (
+              {cart?.map((cartItem, index) => (
                 <div
                   key={index}
-                  className="flex min-h-[150px] items-center gap-4 rounded-xl border-2 border-gray-300 p-4"
+                  className="flex min-h-[180px] items-center gap-4 rounded-xl border-2 border-gray-300 p-4"
                 >
                   <img
-                    src={cart.product?.image || "/path/to/default-image.jpg"}
-                    alt={cart.product?.name || "Tên sản phẩm không xác định"}
+                    src={cartItem.product?.image}
+                    alt={cartItem.product?.name}
                     className="h-32 w-auto object-cover"
                   />
                   <div className="flex-1">
-                    <h6 className="text-lg font-bold text-[#00561e]">
-                      {cart.product?.name || "Tên sản phẩm không xác định"}
+                    <h6 className="line-clamp-2 h-16 pb-4 text-lg font-bold text-[#00561e]">
+                      {cartItem.product?.name}
                     </h6>
-                    <p className="text-lg font-bold text-[#925802]">
-                      Số lượng: {cart.quantity}
+                    <p className="pb-4 text-lg font-bold text-[#925802]">
+                      Số lượng: {cartItem.quantity}
                     </p>
                     <p className="text-lg font-bold text-black">
-                      Trạng thái: {cart.statusProduct}
+                      Trạng thái:{" "}
+                      {activeStep === 0
+                        ? "Đã nhận"
+                        : activeStep === 1
+                          ? "Đang nấu"
+                          : "Hoàn thành"}
                     </p>
                   </div>
                 </div>

@@ -106,7 +106,7 @@ export const deleteTable = async (req, res) => {
 // Add a product to the table's cart
 export const addProductToCart = async (req, res) => {
   const { id } = req.params;
-  const { productId, quantity, totalPrice } = req.body;
+  const { productId, quantity } = req.body;
 
   try {
     const table = await Table.findById(id);
@@ -124,10 +124,9 @@ export const addProductToCart = async (req, res) => {
     if (existingCartItem) {
       // Cập nhật số lượng và tổng giá
       existingCartItem.quantity += quantity;
-      existingCartItem.totalPrice += totalPrice;
     } else {
       // Thêm sản phẩm mới vào giỏ
-      table.cart.push({ product: productId, quantity, totalPrice });
+      table.cart.push({ product: productId, quantity });
     }
 
     // Lưu vào cơ sở dữ liệu
@@ -357,6 +356,37 @@ export const getTableAsRequest = async (req, res) => {
   }
 };
 
+export const updateNotice = async (req, res) => {
+  const { id } = req.params; // Lấy ID từ params
+  const updates = req.body; // Lấy thông tin cần update từ body
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Invalid Table ID" });
+  }
+
+  try {
+    const updatedTable = await Table.findByIdAndUpdate(
+      id,
+      updates, // Thông tin cần cập nhật (trong trường hợp này là { notice: 0 })
+      { new: true } // Trả về document đã được cập nhật
+    );
+
+    if (!updatedTable) {
+      return res.status(404).json({
+        success: false,
+        message: "Table not found",
+      });
+    }
+
+    res.status(200).json({ success: true, data: updatedTable });
+  } catch (error) {
+    console.error("Error in updating table: ", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 export const getTableAsNotice = async (req, res) => {
   try {
     const tables = await Table.find({ notice: 1 })
@@ -394,36 +424,5 @@ export const getTableAsNotice = async (req, res) => {
       success: false,
       message: "Server Error",
     });
-  }
-};
-
-export const updateNotice = async (req, res) => {
-  const { id } = req.params; // Lấy ID từ params
-  const updates = req.body; // Lấy thông tin cần update từ body
-
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Invalid Table ID" });
-  }
-
-  try {
-    const updatedTable = await Table.findByIdAndUpdate(
-      id,
-      updates, // Thông tin cần cập nhật (trong trường hợp này là { notice: 0 })
-      { new: true } // Trả về document đã được cập nhật
-    );
-
-    if (!updatedTable) {
-      return res.status(404).json({
-        success: false,
-        message: "Table not found",
-      });
-    }
-
-    res.status(200).json({ success: true, data: updatedTable });
-  } catch (error) {
-    console.error("Error in updating table: ", error.message);
-    res.status(500).json({ success: false, message: "Server Error" });
   }
 };

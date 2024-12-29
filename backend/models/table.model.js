@@ -16,7 +16,12 @@ const tableSchema = new mongoose.Schema(
           required: true,
         },
         quantity: { type: Number, required: true },
-        statusProduct: { type: Number, default: 0 },
+        statusProduct: [
+          {
+            status: { type: Number, default: 0 },
+            quantity: { type: Number, default: 0 },
+          },
+        ],
       },
     ],
   },

@@ -216,7 +216,7 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
                   <span className="line-clamp-1 block pt-10 font-josefin text-lg font-bold text-black">
-                    {(item.quantity * item.product.price).toLocaleString()}₫
+                    {(item.quantity * item.product.sell_price).toLocaleString()}₫
                   </span>
                 </div>
               </div>
