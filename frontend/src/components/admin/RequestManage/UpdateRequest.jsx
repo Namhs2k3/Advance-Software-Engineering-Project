@@ -4,8 +4,8 @@ import { faXmark, faCheck } from "@fortawesome/free-solid-svg-icons";
 
 const steps = ["Chờ", "Đang chuẩn bị", "Hoàn thành"]; // 3 steps
 
-const UpdateRequest = ({ order, onClose }) => {
-  const [activeStep, setActiveStep] = useState(order.activeStep);
+const UpdateRequest = ({ table, onClose }) => {
+  const [activeStep, setActiveStep] = useState(table.activeStep);
 
   const handleNext = () => {
     if (activeStep < steps.length - 1) {
@@ -25,7 +25,7 @@ const UpdateRequest = ({ order, onClose }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="h-[650px] w-full max-w-3xl rounded-lg bg-white p-6 shadow-lg">
         <div className="flex justify-between">
-          <h2 className="text-xl font-bold">Yêu cầu của bàn {order.name}</h2>
+          <h2 className="text-xl font-bold">Yêu cầu của bàn {table.name}</h2>
           <button
             onClick={onClose}
             className="text-4xl text-gray-500 hover:text-black"
@@ -35,7 +35,6 @@ const UpdateRequest = ({ order, onClose }) => {
         </div>
 
         <div className="mt-6">
-          {/* Progress Bar */}
           <div className="relative mb-4 pt-2">
             <div className="absolute top-[43px] ml-10 h-1 w-11/12 rounded-full bg-gray-300">
               <div
@@ -65,7 +64,6 @@ const UpdateRequest = ({ order, onClose }) => {
                         index + 1
                       )}
                     </div>
-                    {/* Text description below each step */}
                     <span className="mt-2 text-xl font-semibold text-gray-500">
                       {index === 0
                         ? "Đã nhận"
@@ -79,30 +77,27 @@ const UpdateRequest = ({ order, onClose }) => {
             </div>
           </div>
 
-          {/* Step Numbers */}
-
-          {/* Order details */}
           <div className="mx-auto h-[350px] max-w-3xl overflow-y-scroll">
             <div className="grid grid-cols-2 gap-4 p-4">
-              {order?.items?.map((item, index) => (
+              {table?.cart?.map((cart, index) => (
                 <div
                   key={index}
                   className="flex min-h-[150px] items-center gap-4 rounded-xl border-2 border-gray-300 p-4"
                 >
-                  {/* Ảnh sản phẩm */}
                   <img
-                    src={item.image} // Đảm bảo mỗi item có trường `image`
-                    alt={item.name}
+                    src={cart.product?.image || "/path/to/default-image.jpg"}
+                    alt={cart.product?.name || "Tên sản phẩm không xác định"}
                     className="h-32 w-auto object-cover"
                   />
-
-                  {/* Thông tin sản phẩm */}
                   <div className="flex-1">
                     <h6 className="text-lg font-bold text-[#00561e]">
-                      {item.name}
+                      {cart.product?.name || "Tên sản phẩm không xác định"}
                     </h6>
                     <p className="text-lg font-bold text-[#925802]">
-                      Số lượng: {item.quantity}
+                      Số lượng: {cart.quantity}
+                    </p>
+                    <p className="text-lg font-bold text-black">
+                      Trạng thái: {cart.statusProduct}
                     </p>
                   </div>
                 </div>
@@ -110,7 +105,6 @@ const UpdateRequest = ({ order, onClose }) => {
             </div>
           </div>
 
-          {/* Step control buttons */}
           <div className="mt-6 flex justify-between">
             <button
               onClick={handleBack}

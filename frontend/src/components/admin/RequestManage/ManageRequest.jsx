@@ -34,8 +34,8 @@ const ManageRequest = () => {
   );
 
   const openUpdateForm = (table) => {
-    console.log("Selected table data:", table);
-    setSelectedTable(table);
+    console.log("Selected table data:", table); // Kiểm tra dữ liệu
+    setSelectedTable(table); // Truyền trực tiếp dữ liệu table
     setUpdateFormVisible(true);
   };
 
@@ -103,7 +103,7 @@ const ManageRequest = () => {
 
       {isUpdateFormVisible && selectedTable && (
         <UpdateRequest
-          order={selectedTable}
+          table={selectedTable}
           onClose={() => setUpdateFormVisible(false)}
         />
       )}
