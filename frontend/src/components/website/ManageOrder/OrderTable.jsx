@@ -35,6 +35,7 @@ const OrderTable = () => {
       toast.error("Có lỗi xảy ra khi lấy danh sách bàn.");
     }
   };
+  
 
   // Lấy danh sách bàn và tiếp tục cập nhật mỗi 2 giây
   useEffect(() => {
@@ -142,7 +143,12 @@ const OrderTable = () => {
     <div className="flex">
       {/* Bên trái: Danh sách bàn */}
       <div className="flex w-5/12 flex-col border-r border-gray-300 p-4">
-        <h2 className="mb-4 text-2xl font-bold">Danh sách bàn</h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-josefin text-2xl font-bold">Danh sách bàn</h2>
+          <button className="bg-[#633c02] px-4 py-3 font-bold text-white transition-transform duration-200 hover:scale-90">
+            Chuyển bàn
+          </button>
+        </div>
         <div className="flex-1 overflow-y-auto">
           <div className="grid max-h-[500px] grid-cols-3 items-start gap-4">
             {tables.map((table) => (

@@ -10,7 +10,7 @@ const tableSchema = new mongoose.Schema(
     notice: { type: Number, default: 0 },
     cart: [
       {
-        product: {
+        product: {  
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
           required: true,
