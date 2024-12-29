@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark, faCheck } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 
 const steps = ["Chờ", "Đang chuẩn bị", "Hoàn thành"]; // 3 steps
 
@@ -8,28 +9,88 @@ const UpdateRequest = ({ table, onClose }) => {
   const [activeStep, setActiveStep] = useState(table.activeStep);
   const [cart, setCart] = useState(table.cart);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (activeStep < steps.length - 1) {
-      // Chuyển đến bước tiếp theo
-      setActiveStep((prev) => prev + 1);
-    } else {
-      // Nếu đã hoàn thành, quay lại bước đầu tiên và cập nhật trạng thái sản phẩm
-      setActiveStep(0);
+      const newActiveStep = activeStep + 1;
+      setActiveStep(newActiveStep); // Cập nhật state activeStep
 
-      // Cập nhật trạng thái của tất cả các sản phẩm trong cart
+      // Gửi cập nhật qua API
+      try {
+        const response = await axios.put(
+          `http://localhost:5000/api/tables/${table._id}`,
+          {
+            activeStep: newActiveStep, // Cập nhật activeStep
+            cart: cart, // Giữ nguyên giỏ hàng
+          },
+        );
+
+        if (response.data.success) {
+          console.log("Table updated successfully:", response.data.data);
+        } else {
+          console.error("Error updating table:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error calling API:", error.message);
+      }
+    } else {
+      // Nếu bước đã hoàn thành, quay lại bước đầu tiên và cập nhật trạng thái sản phẩm trong giỏ hàng
       const updatedCart = cart.map((item) => ({
         ...item,
-        productStatus: 1, // Đặt trạng thái sản phẩm là đã hoàn thành (1)
+        statusProduct: item.statusProduct.map((status) => ({
+          ...status,
+          state: 1, // Đặt trạng thái là hoàn thành
+          doneQuantity:
+            status.doneQuantity + (item.quantity - status.doneQuantity),
+        })),
       }));
 
-      setCart(updatedCart); // Cập nhật lại cart
+      setCart(updatedCart);
+
+      // Gửi cập nhật qua API
+      try {
+        const response = await axios.put(
+          `http://localhost:5000/api/tables/${table._id}`,
+          {
+            activeStep: 0, // Cập nhật activeStep về 0
+            cart: updatedCart, // Gửi giỏ hàng đã cập nhật
+            notice: 1,
+            request: 0,
+          },
+        );
+
+        if (response.data.success) {
+          console.log("Table updated successfully:", response.data.data);
+        } else {
+          console.error("Error updating table:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error calling API:", error.message);
+      }
+
       onClose(); // Đóng modal
     }
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
     if (activeStep > 0) {
-      setActiveStep((prev) => prev - 1);
+      const newActiveStep = activeStep - 1;
+      setActiveStep(newActiveStep);
+
+      // Gửi cập nhật về API khi quay lại bước trước
+      try {
+        const response = await axios.put(
+          `http://localhost:5000/api/tables/${table._id}`,
+          {
+            activeStep: newActiveStep, // Cập nhật activeStep về bước trước
+          },
+        );
+
+        if (!response.data.success) {
+          console.error("Error updating table:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error calling API:", error.message);
+      }
     }
   };
 
@@ -106,7 +167,9 @@ const UpdateRequest = ({ table, onClose }) => {
                       {cartItem.product?.name}
                     </h6>
                     <p className="pb-4 text-lg font-bold text-[#925802]">
-                      Số lượng: {cartItem.quantity}
+                      Số lượng:{" "}
+                      {cartItem.quantity -
+                        cartItem.statusProduct[0]?.doneQuantity}
                     </p>
                     <p className="text-lg font-bold text-black">
                       Trạng thái:{" "}

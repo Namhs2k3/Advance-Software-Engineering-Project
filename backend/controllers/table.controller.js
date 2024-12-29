@@ -40,7 +40,6 @@ export const createTable = async (req, res) => {
 // Update a table
 export const updateTable = async (req, res) => {
   const { id } = req.params;
-  const { name, isActive } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res
@@ -51,7 +50,7 @@ export const updateTable = async (req, res) => {
   try {
     const updatedTable = await Table.findByIdAndUpdate(
       id,
-      { name, isActive },
+      { ...req.body },
       { new: true }
     );
 
@@ -122,11 +121,17 @@ export const addProductToCart = async (req, res) => {
     );
 
     if (existingCartItem) {
-      // Cập nhật số lượng và tổng giá
+      // Nếu sản phẩm đã có trong giỏ, chỉ cập nhật số lượng mà không thay đổi `doneQuantity`
       existingCartItem.quantity += quantity;
     } else {
-      // Thêm sản phẩm mới vào giỏ
-      table.cart.push({ product: productId, quantity });
+      // Thêm sản phẩm mới vào giỏ với giá trị mặc định cho `statusProduct`
+      table.cart.push({
+        product: productId,
+        quantity,
+        statusProduct: [
+          { state: 0, doneQuantity: 0 }, // Khởi tạo với `doneQuantity` bằng 0
+        ], 
+      });
     }
 
     // Lưu vào cơ sở dữ liệu
