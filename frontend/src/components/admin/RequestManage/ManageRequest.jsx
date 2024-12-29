@@ -87,7 +87,17 @@ const ManageRequest = () => {
                   <td className="px-4 py-6 text-center font-bold">
                     {table.name}
                   </td>
-                  <td className="px-4 py-6 text-center">{table.request}</td>
+                  <td className="px-4 py-6 text-center">
+                    {
+                      table.activeStep === 0
+                        ? "Đã nhận yêu cầu"
+                        : table.activeStep === 1
+                          ? "Đang làm"
+                          : table.activeStep === 2
+                            ? "Đang gửi món"
+                            : "Chưa có trạng thái" // Default case if activeStep is something other than 0, 1, or 2
+                    }
+                  </td>
                   <td className="px-4 py-6 text-center">
                     {new Date(table.createdAt).toLocaleDateString()}
                   </td>
