@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faShop } from "@fortawesome/free-solid-svg-icons";
+import { faTimes} from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 
 const PaymentPage = () => {
@@ -209,11 +209,10 @@ const PaymentPage = () => {
     }
   };
 
-
   const finalsell_Price = Math.max(calculatedTotalsell_Price - discount, 0);
 
   return (
-    <div className="mx-auto max-w-[1200px] pt-8 px-4 pb-20">
+    <div className="mx-auto max-w-[1200px] px-4 pb-20 pt-8">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-10">
         {/* Phần thông tin khách hàng chiếm 6 cột */}
         <div className="payment-left order-2 col-span-10 sm:order-1 sm:col-span-6">

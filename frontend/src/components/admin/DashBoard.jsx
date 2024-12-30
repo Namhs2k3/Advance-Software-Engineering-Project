@@ -19,7 +19,6 @@ import { Link } from "react-router-dom";
 import imgpersonportal from "../../../../backend/assets/imgpersonportal.png";
 import Cookies from "js-cookie";
 import ManageOrder from "./OrderManage/ManageOrder";
-import ManageChart from "./ChartManage/ManageChart";
 import ManageCoupon from "./CouponManage/ManageCoupon";
 import ProfileAdmin from "./ManageProfile/ProfileAdmin";
 import axios from "axios";
@@ -128,8 +127,6 @@ const DashBoard = () => {
         return <ManageCategory />;
       case "Order":
         return <ManageOrder />;
-      case "Chart":
-        return <ManageChart />;
       case "Coupon":
         return <ManageCoupon />;
       case "ProfileAdmin":
@@ -180,13 +177,6 @@ const DashBoard = () => {
               isActive={activeComponent === "Account"}
             />
           )}
-          <SidebarItem
-            icon={faChartColumn}
-            label="Thống kê"
-            isSidebarExpanded={isSidebarExpanded}
-            onClick={() => handleSetActiveComponent("Chart")}
-            isActive={activeComponent === "Chart"}
-          />
           <SidebarItem
             icon={faReceipt}
             label="Đơn Hàng"

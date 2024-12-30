@@ -20,9 +20,6 @@ const UpdateAccount = ({ account, onClose, onUpdateAccount }) => {
 
     if (
       !updatedAccount.username ||
-      !updatedAccount.password ||
-      !updatedAccount.gmail ||
-      !updatedAccount.numbers ||
       !updatedAccount.role
     ) {
       alert("Please fill in all fields.");
@@ -62,38 +59,6 @@ const UpdateAccount = ({ account, onClose, onUpdateAccount }) => {
               type="text"
               name="username"
               value={updatedAccount.username}
-              onChange={handleInputChange}
-              className="w-full rounded-md border border-gray-300 p-2"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block pb-2 text-xl font-medium">Mật khẩu</label>
-            <input
-              type="password"
-              name="password"
-              value={updatedAccount.password}
-              onChange={handleInputChange}
-              className="w-full rounded-md border border-gray-300 p-2"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block pb-2 text-xl font-medium">Gmail</label>
-            <input
-              type="email"
-              name="gmail"
-              value={updatedAccount.gmail}
-              onChange={handleInputChange}
-              className="w-full rounded-md border border-gray-300 p-2"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block pb-2 text-xl font-medium">
-              Số điện thoại
-            </label>
-            <input
-              type="text"
-              name="numbers"
-              value={updatedAccount.numbers}
               onChange={handleInputChange}
               className="w-full rounded-md border border-gray-300 p-2"
             />
