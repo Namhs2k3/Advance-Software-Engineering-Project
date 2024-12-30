@@ -23,9 +23,9 @@ const Login = () => {
       try {
         const decoded = decodeJWT(token); // Giải mã token
         // Điều hướng dựa trên vai trò người dùng
-        if (decoded.role.includes("admin") || decoded.role.includes("staff")) {
+        if (decoded.role.includes("admin") || decoded.role.includes("chef")) {
           navigate("/admin");
-        } else if (decoded.role.includes("customer")) {
+        } else if (decoded.role.includes("staff")) {
           navigate("/customerprofile");
         }
       } catch (error) {

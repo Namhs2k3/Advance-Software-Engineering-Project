@@ -30,7 +30,7 @@ export const createAccount = async (req, res) => {
     });
   }
 
-  const validRoles = ["admin", "staff", "customer"];
+  const validRoles = ["admin", "staff", "chef"];
   if (!validRoles.includes(role)) {
     return res.status(400).json({
       success: false,
@@ -95,10 +95,9 @@ export const createCustomerAccount = async (req, res) => {
       password,
       gmail,
       numbers,
-      role: "customer", // Đặt mặc định role là "customer"
+      role: "staff", // Đặt mặc định role là "customer"
     });
     const savedAccount = await newAccount.save();
-
     // Tạo JWT token
     const token = jwt.sign(
       {
@@ -117,11 +116,10 @@ export const createCustomerAccount = async (req, res) => {
       token, // Token được trả về
     });
   } catch (error) {
-    console.error("Error creating customer account:", error.message);
+    console.error("Error creating staff account:", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-
 
 export const updateAccount = async (req, res) => {
   const { id } = req.params;

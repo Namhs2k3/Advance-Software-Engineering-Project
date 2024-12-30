@@ -6,7 +6,7 @@ const AddAccount = ({ onAddAccount, onClose }) => {
     password: "",
     gmail: "",
     numbers: "",
-    role: "customer", // Mặc định là "customer"
+    role: "staff", // Mặc định là "customer"
   });
 
   const handleInputChange = (e) => {
@@ -22,7 +22,6 @@ const AddAccount = ({ onAddAccount, onClose }) => {
   };
 
   const handleSubmit = (e) => {
-    
     e.preventDefault();
     if (
       !newAccount.username ||
@@ -51,7 +50,9 @@ const AddAccount = ({ onAddAccount, onClose }) => {
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block pb-2 text-xl font-medium">Tên tài khoản</label>
+            <label className="block pb-2 text-xl font-medium">
+              Tên tài khoản
+            </label>
             <input
               type="text"
               name="username"
@@ -81,7 +82,9 @@ const AddAccount = ({ onAddAccount, onClose }) => {
             />
           </div>
           <div className="mb-4">
-            <label className="block pb-2 text-xl font-medium">Số điện thoại</label>
+            <label className="block pb-2 text-xl font-medium">
+              Số điện thoại
+            </label>
             <input
               type="text"
               name="numbers"
@@ -100,14 +103,14 @@ const AddAccount = ({ onAddAccount, onClose }) => {
             >
               <option value="admin">Admin</option>
               <option value="staff">Staff</option>
-              <option value="customer">Customer</option>
+              <option value="chef">Chef</option>
             </select>
           </div>
           <div className="flex justify-between pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md w-24 bg-gray-300 px-4 py-2 text-black hover:bg-gray-400"
+              className="w-24 rounded-md bg-gray-300 px-4 py-2 text-black hover:bg-gray-400"
             >
               Hủy
             </button>

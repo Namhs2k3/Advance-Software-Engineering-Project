@@ -43,10 +43,10 @@ const LoginPage = () => {
           console.log("Decoded Token:", decoded);
           if (
             decoded.role.includes("admin") ||
-            decoded.role.includes("staff")
+            decoded.role.includes("chef")
           ) {
             navigate("/admin");
-          } else if (decoded.role.includes("customer")) {
+          } else if (decoded.role.includes("staff")) {
             navigate("/customerprofile");
           } else {
             toast.error("Vai trò không hợp lệ!");

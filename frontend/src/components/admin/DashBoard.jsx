@@ -10,7 +10,7 @@ import {
   faReceipt,
   faTicket,
   faCouch,
-  faBellConcierge
+  faBellConcierge,
 } from "@fortawesome/free-solid-svg-icons";
 import ManageProduct from "./ProductManage/ManageProduct";
 import ManageAccount from "./AccountManage/ManageAccount";
@@ -107,38 +107,39 @@ const DashBoard = () => {
   };
 
   const renderContent = () => {
-    if (userRole && userRole.includes("customer")) {
-      return (
-        <div className="p-6">
-          <h2 className="text-2xl font-bold">Access Denied</h2>
-          <p>You do not have permission to access this page.</p>
-        </div>
-      );
+    if (
+      userRole &&
+      userRole.includes("chef") &&
+      activeComponent === "Request"
+    ) {
+      return <ManageRequest />;
     }
 
-    switch (activeComponent) {
-      case "Account":
-        return userRole && userRole.includes("admin") ? (
-          <ManageAccount />
-        ) : null;
-      case "Product":
-        return <ManageProduct />;
-      case "Category":
-        return <ManageCategory />;
-      case "Order":
-        return <ManageOrder />;
-      case "Coupon":
-        return <ManageCoupon />;
-      case "ProfileAdmin":
-        return <ProfileAdmin />;
-      case "Table":
-        return <ManageTable />;
-      case "Request":
-        return <ManageRequest />;
-      default:
-        return <ManageAccount />;
+    if (userRole && userRole.includes("admin")) {
+      switch (activeComponent) {
+        case "Account":
+          return <ManageAccount />;
+        case "Product":
+          return <ManageProduct />;
+        case "Category":
+          return <ManageCategory />;
+        case "Order":
+          return <ManageOrder />;
+        case "Coupon":
+          return <ManageCoupon />;
+        case "ProfileAdmin":
+          return <ProfileAdmin />;
+        case "Table":
+          return <ManageTable />;
+        default:
+          return <ManageAccount />;
+      }
     }
+
+    // Nếu không có quyền, hiển thị trang không được phép truy cập
+    return <div>Bạn không có quyền truy cập vào nội dung này.</div>;
   };
+
 
   return (
     <div className="flex h-screen">
@@ -168,57 +169,64 @@ const DashBoard = () => {
 
         {/* Sidebar Menu */}
         <ul className="mt-4">
+          {/* Mục dành cho admin */}
           {Array.isArray(userRole) && userRole.includes("admin") && (
+            <>
+              <SidebarItem
+                icon={faUser}
+                label="Tài khoản"
+                isSidebarExpanded={isSidebarExpanded}
+                onClick={() => handleSetActiveComponent("Account")}
+                isActive={activeComponent === "Account"}
+              />
+              <SidebarItem
+                icon={faReceipt}
+                label="Đơn Hàng"
+                isSidebarExpanded={isSidebarExpanded}
+                onClick={() => handleSetActiveComponent("Order")}
+                isActive={activeComponent === "Order"}
+              />
+              <SidebarItem
+                icon={faGlassWater}
+                label="Sản phẩm"
+                isSidebarExpanded={isSidebarExpanded}
+                onClick={() => handleSetActiveComponent("Product")}
+                isActive={activeComponent === "Product"}
+              />
+              <SidebarItem
+                icon={faClipboardList}
+                label="Thực đơn"
+                isSidebarExpanded={isSidebarExpanded}
+                onClick={() => handleSetActiveComponent("Category")}
+                isActive={activeComponent === "Category"}
+              />
+              <SidebarItem
+                icon={faTicket}
+                label="Mã giảm giá"
+                isSidebarExpanded={isSidebarExpanded}
+                onClick={() => handleSetActiveComponent("Coupon")}
+                isActive={activeComponent === "Coupon"}
+              />
+              <SidebarItem
+                icon={faCouch}
+                label="Bàn"
+                isSidebarExpanded={isSidebarExpanded}
+                onClick={() => handleSetActiveComponent("Table")}
+                isActive={activeComponent === "Table"}
+              />
+            </>
+          )}
+
+          {/* Mục dành cho chef */}
+          {Array.isArray(userRole) && userRole.includes("chef") && (
             <SidebarItem
-              icon={faUser}
-              label="Tài khoản"
+              icon={faBellConcierge}
+              label="Phiếu ghi món"
               isSidebarExpanded={isSidebarExpanded}
-              onClick={() => handleSetActiveComponent("Account")}
-              isActive={activeComponent === "Account"}
+              onClick={() => handleSetActiveComponent("Request")}
+              isActive={activeComponent === "Request"}
             />
           )}
-          <SidebarItem
-            icon={faReceipt}
-            label="Đơn Hàng"
-            isSidebarExpanded={isSidebarExpanded}
-            onClick={() => handleSetActiveComponent("Order")}
-            isActive={activeComponent === "Order"}
-          />
-          <SidebarItem
-            icon={faGlassWater}
-            label="Sản phẩm"
-            isSidebarExpanded={isSidebarExpanded}
-            onClick={() => handleSetActiveComponent("Product")}
-            isActive={activeComponent === "Product"}
-          />
-          <SidebarItem
-            icon={faClipboardList}
-            label="Thực đơn"
-            isSidebarExpanded={isSidebarExpanded}
-            onClick={() => handleSetActiveComponent("Category")}
-            isActive={activeComponent === "Category"}
-          />
-          <SidebarItem
-            icon={faTicket}
-            label="Mã giảm giá"
-            isSidebarExpanded={isSidebarExpanded}
-            onClick={() => handleSetActiveComponent("Coupon")}
-            isActive={activeComponent === "Coupon"}
-          />
-          <SidebarItem
-            icon={faCouch}
-            label="Bàn"
-            isSidebarExpanded={isSidebarExpanded}
-            onClick={() => handleSetActiveComponent("Table")}
-            isActive={activeComponent === "Table"}
-          />
-          <SidebarItem
-            icon={faBellConcierge}
-            label="Phiếu ghi món"
-            isSidebarExpanded={isSidebarExpanded}
-            onClick={() => handleSetActiveComponent("Request")}
-            isActive={activeComponent === "Request"}
-          />
         </ul>
       </div>
       {/* Main Content */}
