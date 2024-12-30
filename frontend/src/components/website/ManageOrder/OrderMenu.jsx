@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faMinus, faPlus, faCartShopping } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import Loading from "../Loading";
 import { toast } from "react-toastify";
@@ -211,10 +211,10 @@ const OrderMenu = ({ selectedTable,secondSelectedTable, onAddToCart }) => {
                     </button>
                     {/* Nút thêm vào giỏ hàng */}
                     <button
-                      className="ml-12 flex h-14 w-14 items-center justify-center rounded-full border bg-orange-950 font-bold text-white"
+                      className="ml-12 flex h-14 w-14 items-center pt-3 pb-2 justify-center text-2xl rounded-full border bg-orange-950 font-bold text-white"
                       onClick={() => handleAddToCart(item)}
                     >
-                      <FontAwesomeIcon icon={faPlus} />
+                      <FontAwesomeIcon icon={faCartShopping} />
                     </button>
                   </div>
                 </div>
