@@ -139,7 +139,6 @@ export const updateProduct = async (req, res) => {
       }
     }
 
-
     let ingredientsArray = undefined;
     if (product.ingredients) {
       ingredientsArray = JSON.parse(product.ingredients);
@@ -165,6 +164,22 @@ export const updateProduct = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Product not found" });
+    }
+
+    for (const ingredientId of existingProduct.ingredients) {
+      const ingredientDoc = await Ingredient.findById(ingredientId);
+
+      if (!ingredientDoc) {
+        return res
+          .status(404)
+          .json({ success: false, message: `Ingredient ${ingredientId} not found` });
+      }
+
+      if (ingredientDoc.quantity < ingredientDoc.safeThreshold) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Ingredient low" });
+      }
     }
 
     // Kiểm tra và cập nhật ảnh nếu có

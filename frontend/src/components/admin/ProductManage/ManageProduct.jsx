@@ -10,6 +10,7 @@ import {
 import AddProduct from "./AddProduct";
 import UpdateProduct from "./UpdateProduct";
 import Loading from "../../website/Loading";
+import { toast } from "react-toastify";
 
 const ManageProduct = () => {
   const [products, setProducts] = useState([]);
@@ -68,16 +69,20 @@ const ManageProduct = () => {
           ? { ...product, displayType: product.displayType === 1 ? 2 : 1 }
           : product,
       );
-      setProducts(updatedProducts);
 
       // Gửi yêu cầu cập nhật API
       const res = await axios.put(`http://localhost:5000/api/products/${id}`, {
         displayType: updatedProducts.find((p) => p._id === id).displayType,
       });
 
+      if (res.data.success) {
+        setProducts(updatedProducts);
+      }
+
       console.log(res);
     } catch (error) {
       console.error("Error updating display type:", error);
+      toast.error(error.response.data.message);
     }
   };
 
