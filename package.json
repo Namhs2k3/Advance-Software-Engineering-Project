@@ -16,6 +16,7 @@
     "@ckeditor/ckeditor5-react": "^9.4.0",
     "@fortawesome/fontawesome-svg-core": "^6.7.1",
     "@fortawesome/free-regular-svg-icons": "^6.7.1",
+    "@json2csv/plainjs": "^7.0.6",
     "axios": "^1.7.8",
     "bcrypt": "^5.1.1",
     "chart.js": "^4.4.7",
