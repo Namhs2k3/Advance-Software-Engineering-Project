@@ -7,82 +7,80 @@ import {
   faEye,
   faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
-import AddProduct from "./AddProduct";
-import UpdateProduct from "./UpdateProduct";
+import AddIngredient from "./AddIngredient";
+import UpdateIngredient from "./UpdateIngredient";
 import Loading from "../../website/Loading";
 
-const ManageProduct = () => {
-  const [products, setProducts] = useState([]);
+const ManageIngredient = () => {
+  const [ingredients, setIngredients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedIngredient, setSelectedIngredient] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Tách riêng hàm fetchProducts để tái sử dụng
-  const fetchProducts = async () => {
+  // Fetch Ingredients
+  const fetchIngredients = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:5000/api/products"); // Đường dẫn API
-      setProducts(response.data.data);
+      const response = await axios.get("http://localhost:5000/api/ingredients"); // API for ingredients
+      setIngredients(response.data.data);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error fetching ingredients:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchIngredients();
   }, []);
 
   useEffect(() => {
     if (!showAddModal && !showUpdateModal) {
-      fetchProducts();
+      fetchIngredients();
     }
   }, [showAddModal, showUpdateModal]);
 
-  const handleCreateProduct = async (product) => {
+  const handleCreateIngredient = async (ingredient) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/products",
-        product,
+        "http://localhost:5000/api/ingredients",
+        ingredient,
       );
-      setProducts([...products, response.data.data]);
+      setIngredients([...ingredients, response.data.data]);
       setShowAddModal(false);
     } catch (error) {
-      console.error("Error creating product:", error.response.data.message);
+      console.error("Error creating ingredient:", error.response.data.message);
     }
   };
 
-  // Lọc sản phẩm theo từ khóa tìm kiếm
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  // Filter ingredients by search term
+  const filteredIngredients = ingredients.filter((ingredient) =>
+    ingredient.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // Hàm toggle trạng thái display
+  // Toggle display type for ingredients
   const toggleDisplayType = async (id) => {
     try {
-      const updatedProducts = products.map((product) =>
-        product._id === id
-          ? { ...product, displayType: product.displayType === 1 ? 2 : 1 }
-          : product,
+      const updatedIngredients = ingredients.map((ingredient) =>
+        ingredient._id === id
+          ? { ...ingredient, displayType: ingredient.displayType === 1 ? 2 : 1 }
+          : ingredient,
       );
-      setProducts(updatedProducts);
+      setIngredients(updatedIngredients);
 
-      // Gửi yêu cầu cập nhật API
-      const res = await axios.put(`http://localhost:5000/api/products/${id}`, {
-        displayType: updatedProducts.find((p) => p._id === id).displayType,
+      // Update API
+      await axios.put(`http://localhost:5000/api/ingredients/${id}`, {
+        displayType: updatedIngredients.find((i) => i._id === id).displayType,
       });
-
-      console.log(res);
     } catch (error) {
       console.error("Error updating display type:", error);
     }
   };
 
-  const handleEditProduct = (product) => {
-    setSelectedProduct(product);
+  const handleEditIngredient = (ingredient) => {
+    setSelectedIngredient(ingredient);
     setShowUpdateModal(true);
   };
 
@@ -90,50 +88,61 @@ const ManageProduct = () => {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
       <div className="w-full max-w-7xl rounded-lg bg-white p-6 shadow-lg">
         <div className="mb-4 text-center text-2xl font-bold">
-          Quản lý sản phẩm
+          Quản lý nguyên liệu
         </div>
 
-        {/* Tìm kiếm sản phẩm */}
+        {/* Search Ingredients */}
         <div className="mb-4 flex items-center justify-between">
           <input
             type="text"
-            placeholder="Tìm kiếm bằng tên hoặc thực đơn"
+            placeholder="Tìm kiếm bằng tên nguyên liệu"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-72 rounded-md border border-gray-300 p-2"
           />
-          <div className="group relative">
+          <div className="flex gap-3">
             <button
-              onClick={() => setShowAddModal(true)}
-              className="rounded-full bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+              onClick={() =>
+                (window.location.href =
+                  "http://localhost:5000/api/ingredients/inventory-report")
+              }
+              className="rounded-full bg-green-500 px-4 py-2 text-white hover:bg-green-600"
             >
-              <FontAwesomeIcon icon={faPlus} />
+              Generate Inventory Report
             </button>
-            <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 transform whitespace-nowrap rounded-md bg-gray-800 px-4 py-2 text-sm text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-              Tạo sản phẩm
-            </span>
+            <div className="group relative">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="rounded-full bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+              >
+                <FontAwesomeIcon icon={faPlus} />
+              </button>
+              <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 transform whitespace-nowrap rounded-md bg-gray-800 px-4 py-2 text-sm text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                Thêm nguyên liệu
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Component AddProduct */}
+        {/* Component AddIngredient */}
         {showAddModal && (
-          <AddProduct
+          <AddIngredient
             showModal={showAddModal}
             setShowModal={setShowAddModal}
-            onCreateProduct={handleCreateProduct}
+            onCreateIngredient={handleCreateIngredient}
           />
         )}
 
-        {/* Component UpdateProduct */}
-        {selectedProduct && showUpdateModal && (
-          <UpdateProduct
+        {/* Component UpdateIngredient */}
+        {selectedIngredient && showUpdateModal && (
+          <UpdateIngredient
             showModal={showUpdateModal}
             setShowModal={setShowUpdateModal}
-            product={selectedProduct}
-            onUpdateProduct={(updatedProduct) => {
-              setProducts((prevProducts) =>
-                prevProducts.map((p) =>
-                  p._id === updatedProduct._id ? updatedProduct : p,
+            ingredient={selectedIngredient}
+            onUpdateIngredient={(updatedIngredient) => {
+              setIngredients((prevIngredients) =>
+                prevIngredients.map((i) =>
+                  i._id === updatedIngredient._id ? updatedIngredient : i,
                 ),
               );
               setShowUpdateModal(false);
@@ -142,58 +151,47 @@ const ManageProduct = () => {
         )}
 
         {loading ? (
-          // Hiển thị phần loading nếu dữ liệu chưa được tải
           <div className="flex h-[255px] w-full items-center justify-center lg:h-[400px]">
-            <Loading /> {/* Hiển thị Loading khi đang tải dữ liệu */}
+            <Loading /> {/* Show Loading when fetching ingredients */}
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg shadow-md">
             <table className="min-w-full table-auto">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="px-4 py-3 text-center">Ảnh</th>
-                  <th className="px-4 py-3 text-left">Tên sản phẩm</th>
-                  <th className="px-4 py-3 text-center">Thực đơn</th>
-                  <th className="px-4 py-3 text-center">Giá</th>
-                  <th className="px-4 py-3 text-center">Giá giảm</th>
+                  <th className="px-4 py-3 text-center">Tên nguyên liệu</th>
+                  <th className="px-4 py-3 text-center">Số lượng</th>
+                  <th className="px-4 py-3 text-center">Ngưỡng an toàn</th>
                   <th className="px-4 py-3 text-center">Ngày cập nhật</th>
                   <th className="px-4 py-3 text-center">Hoạt động</th>
                   <th className="px-4 py-3 text-center">Chỉnh sửa</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredProducts.map((product) => (
-                  <tr key={product._id} className="border-b">
-                    <td className="px-4 py-2">
-                      <img
-                        src={`${product.image}`}
-                        alt={product.name}
-                        className="h-20 w-auto rounded-md object-cover"
-                      />
-                    </td>
-                    <td className="px-4 py-2 font-bold">{product.name}</td>
+                {filteredIngredients.map((ingredient) => (
+                  <tr key={ingredient._id} className="border-b">
+                    <td className="px-4 py-2 font-bold">{ingredient.name}</td>
                     <td className="px-4 py-2 text-center">
-                      {product.category?.name || "chưa có"}
+                      {ingredient.quantity}
                     </td>
                     <td className="px-4 py-2 text-center">
-                      {product.price.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-2 text-center">
-                      {product.sell_price.toLocaleString()}
+                      {ingredient.safeThreshold}
                     </td>
                     <td className="px-4 py-6 text-center">
-                      {new Date(product.updatedAt).toLocaleDateString()}
+                      {new Date(ingredient.updatedAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-2 text-center">
                       <div className="group relative">
                         <FontAwesomeIcon
-                          icon={product.displayType === 1 ? faEye : faEyeSlash}
+                          icon={
+                            ingredient.displayType === 1 ? faEye : faEyeSlash
+                          }
                           className={
-                            product.displayType === 1
+                            ingredient.displayType === 1
                               ? "cursor-pointer text-2xl text-blue-500"
                               : "cursor-pointer text-xl text-gray-400"
                           }
-                          onClick={() => toggleDisplayType(product._id)}
+                          onClick={() => toggleDisplayType(ingredient._id)}
                         />
                         <span className="absolute bottom-full left-1/2 mb-4 -translate-x-1/2 transform whitespace-nowrap rounded-md bg-gray-800 px-2 py-2 text-sm text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
                           Bật hoạt động
@@ -204,7 +202,7 @@ const ManageProduct = () => {
                       <div className="group relative">
                         <button
                           className="rounded-full px-3 py-1 text-blue-400 hover:bg-slate-300"
-                          onClick={() => handleEditProduct(product)}
+                          onClick={() => handleEditIngredient(ingredient)}
                         >
                           <FontAwesomeIcon icon={faPen} />
                         </button>
@@ -224,4 +222,4 @@ const ManageProduct = () => {
   );
 };
 
-export default ManageProduct;
+export default ManageIngredient;

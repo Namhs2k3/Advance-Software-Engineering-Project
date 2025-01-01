@@ -1,25 +1,27 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Select from "react-select";
+import { toast } from "react-toastify";
+
 const AddProduct = ({ showModal, setShowModal }) => {
   const [newProduct, setNewProduct] = useState({
     name: "",
-    image: null, // Đặt image là null thay vì chuỗi rỗng
+    image: null,
     price: "",
     sell_price: "",
     category: "",
+    ingredients: [],
     displayType: 1,
   });
+  const [ingredients, setIngredients] = useState([]);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
 
-  // Lấy danh sách danh mục
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await fetch("http://localhost:5000/api/categories");
         const data = await response.json();
-
-        // Lọc danh mục có isActive = 1
         const activeCategories = data.data.filter(
           (category) => category.isActive === 1,
         );
@@ -29,7 +31,24 @@ const AddProduct = ({ showModal, setShowModal }) => {
       }
     };
 
+    const fetchIngredients = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/ingredients");
+        const data = await response.json();
+        const ingredientOptions = data.data
+          .filter((ingredient) => ingredient.displayType === 1)
+          .map((ingredient) => ({
+            value: ingredient._id,
+            label: ingredient.name,
+          }));
+        setIngredients(ingredientOptions);
+      } catch (error) {
+        console.error("Error fetching ingredients:", error);
+      }
+    };
+
     fetchCategories();
+    fetchIngredients();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -47,6 +66,8 @@ const AddProduct = ({ showModal, setShowModal }) => {
       return;
     }
 
+    console.log(newProduct.ingredients.map((ingredient) => ingredient.value));
+
     const formData = new FormData();
     formData.append("name", newProduct.name);
     formData.append("image", newProduct.image);
@@ -54,6 +75,12 @@ const AddProduct = ({ showModal, setShowModal }) => {
     formData.append("sell_price", newProduct.sell_price);
     formData.append("category", newProduct.category);
     formData.append("displayType", newProduct.displayType);
+    formData.append(
+      "ingredients",
+      JSON.stringify(
+        newProduct.ingredients.map((ingredient) => ingredient.value),
+      ),
+    );
 
     try {
       const response = await axios.post(
@@ -61,21 +88,21 @@ const AddProduct = ({ showModal, setShowModal }) => {
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data", // Đảm bảo là 'multipart/form-data'
+            "Content-Type": "multipart/form-data",
           },
         },
       );
       console.log("Tạo sản phẩm thành công", response.data);
+      setShowModal(false);
     } catch (error) {
       if (error.response) {
-        console.error("Error adding product", error.response.data); // Kiểm tra error.response
+        console.error("Error adding product", error.response.data);
       } else if (error.request) {
         console.error("No response received from server", error.request);
       } else {
-        console.error("Error", error.message); // Thông báo lỗi khác
+        toast.error("Error", error.message);
       }
     }
-    setShowModal(false);
   };
 
   const handleNumericInput = (value, field) => {
@@ -119,6 +146,23 @@ const AddProduct = ({ showModal, setShowModal }) => {
               required
               accept="image/*"
               className="h-12 w-full rounded-md border border-gray-300 p-2"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block pb-2 text-xl font-medium">
+              Thành phần (Ingredients)
+            </label>
+            <Select
+              isMulti
+              options={ingredients}
+              value={newProduct.ingredients}
+              onChange={(selected) =>
+                setNewProduct({ ...newProduct, ingredients: selected })
+              }
+              placeholder="Chọn thành phần..."
+              className="basic-multi-select"
+              classNamePrefix="select"
+              required
             />
           </div>
           <div className="mb-4 flex space-x-4">
