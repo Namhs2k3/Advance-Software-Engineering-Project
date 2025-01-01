@@ -11,6 +11,7 @@ import {
   faTicket,
   faCouch,
   faBellConcierge,
+  faBowlFood,
 } from "@fortawesome/free-solid-svg-icons";
 import ManageProduct from "./ProductManage/ManageProduct";
 import ManageAccount from "./AccountManage/ManageAccount";
@@ -26,6 +27,7 @@ import { toast } from "react-toastify";
 import { decodeJWT } from "../utils/jwtUtils";
 import ManageTable from "./TableManage/ManageTable";
 import ManageRequest from "./RequestManage/ManageRequest";
+import ManageIngredient from "./ManageIngredient/ManageIngredient";
 
 const SidebarItem = ({ icon, label, isSidebarExpanded, onClick, isActive }) => (
   <li
@@ -131,6 +133,8 @@ const DashBoard = () => {
           return <ProfileAdmin />;
         case "Table":
           return <ManageTable />;
+        case "Ingredient":
+          return <ManageIngredient />;
         default:
           return <ManageAccount />;
       }
@@ -139,7 +143,6 @@ const DashBoard = () => {
     // Nếu không có quyền, hiển thị trang không được phép truy cập
     return <div>Bạn không có quyền truy cập vào nội dung này.</div>;
   };
-
 
   return (
     <div className="flex h-screen">
@@ -213,6 +216,13 @@ const DashBoard = () => {
                 isSidebarExpanded={isSidebarExpanded}
                 onClick={() => handleSetActiveComponent("Table")}
                 isActive={activeComponent === "Table"}
+              />
+              <SidebarItem
+                icon={faBowlFood}
+                label="Nguyên liệu"
+                isSidebarExpanded={isSidebarExpanded}
+                onClick={() => handleSetActiveComponent("Ingredient")}
+                isActive={activeComponent === "Ingredient"}
               />
             </>
           )}

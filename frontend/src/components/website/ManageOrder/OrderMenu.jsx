@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faMinus,
+  faPlus,
+  faCartShopping,
+} from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import Loading from "../Loading";
 import { toast } from "react-toastify";
 
-const OrderMenu = ({ selectedTable,secondSelectedTable, onAddToCart }) => {
+const OrderMenu = ({ selectedTable, secondSelectedTable, onAddToCart }) => {
   const [activeCategory, setActiveCategory] = useState("TẤT CẢ");
   const [categories, setCategories] = useState(["TẤT CẢ"]);
   const [products, setProducts] = useState([]);
@@ -37,11 +41,10 @@ const OrderMenu = ({ selectedTable,secondSelectedTable, onAddToCart }) => {
         toast.error("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
       }
     } catch (error) {
-      console.error("Error adding product to cart:", error.message);
-      toast.error("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
+      console.error("Error adding product to cart:", error);
+      toast.error(error.response.data.message);
     }
   };
-
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -167,7 +170,7 @@ const OrderMenu = ({ selectedTable,secondSelectedTable, onAddToCart }) => {
             {filteredProducts.map((item) => (
               <div
                 key={item._id}
-                className="flex min-h-[190px] cursor-pointer items-center gap-4 rounded-xl border-2 border-gray-300 p-4 "
+                className="flex min-h-[190px] cursor-pointer items-center gap-4 rounded-xl border-2 border-gray-300 p-4"
               >
                 {/* Ảnh sản phẩm */}
                 <img
@@ -211,10 +214,10 @@ const OrderMenu = ({ selectedTable,secondSelectedTable, onAddToCart }) => {
                     </button>
                     {/* Nút thêm vào giỏ hàng */}
                     <button
-                      className="ml-12 flex h-14 w-14 items-center justify-center rounded-full border bg-orange-950 font-bold text-white"
+                      className="ml-12 flex h-14 w-14 items-center justify-center rounded-full border bg-orange-950 pb-2 pt-3 text-2xl font-bold text-white"
                       onClick={() => handleAddToCart(item)}
                     >
-                      <FontAwesomeIcon icon={faPlus} />
+                      <FontAwesomeIcon icon={faCartShopping} />
                     </button>
                   </div>
                 </div>
