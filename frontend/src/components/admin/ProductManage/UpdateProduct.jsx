@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Select from "react-select";
 
 const UpdateProduct = ({
   showModal,
@@ -13,8 +14,10 @@ const UpdateProduct = ({
     price: "",
     sell_price: "",
     category: "",
+    ingredients: [],
     displayType: 1,
   });
+  const [ingredients, setIngredients] = useState([]);
   const [categories, setCategories] = useState([]);
 
   // Lấy danh sách danh mục
@@ -33,19 +36,41 @@ const UpdateProduct = ({
       }
     };
 
+    const fetchIngredients = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/ingredients");
+        const data = await response.json();
+        const ingredientOptions = data.data
+          .filter((ingredient) => ingredient.displayType === 1)
+          .map((ingredient) => ({
+            value: ingredient._id,
+            label: ingredient.name,
+          }));
+        setIngredients(ingredientOptions);
+      } catch (error) {
+        console.error("Error fetching ingredients:", error);
+      }
+    };
+
+    fetchIngredients();
     fetchCategories();
   }, []);
 
   // Lấy thông tin sản phẩm hiện tại và cập nhật vào form
   useEffect(() => {
     if (showModal && product) {
+      const updatedIngredients = ingredients.filter((ingredient) =>
+        product.ingredients.includes(ingredient.value),
+      );
+
       setUpdatedProduct({
-        ...product, // Cập nhật thông tin sản phẩm vào state
-        image: product.image, // Lưu tên ảnh vào state
-        category: product.category?._id, // Lưu ID danh mục vào state
+        ...product,
+        image: product.image,
+        category: product.category?._id,
+        ingredients: updatedIngredients, // Lưu lại mảng nguyên liệu đã được bổ sung tên
       });
     }
-  }, [showModal, product]);
+  }, [showModal, product, ingredients]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -64,6 +89,14 @@ const UpdateProduct = ({
     }));
   };
 
+  const handleIngredientsChange = (selectedOptions) => {
+    console.log(selectedOptions);
+    setUpdatedProduct((prevProduct) => ({
+      ...prevProduct,
+      ingredients: selectedOptions || [],
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -73,6 +106,12 @@ const UpdateProduct = ({
       formData.append("sell_price", updatedProduct.sell_price);
       formData.append("category", updatedProduct.category);
       formData.append("displayType", updatedProduct.displayType);
+      formData.append(
+        "ingredients",
+        JSON.stringify(
+          updatedProduct.ingredients.map((ingredient) => ingredient.value),
+        ),
+      );
 
       if (updatedProduct.imageFile) {
         formData.append("image", updatedProduct.imageFile); // Gửi ảnh mới
@@ -140,6 +179,20 @@ const UpdateProduct = ({
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="w-2/3">
+              <label className="block pb-2 text-xl font-medium">
+                Nguyên liệu
+              </label>
+              <Select
+                isMulti
+                options={ingredients}
+                value={updatedProduct.ingredients}
+                onChange={handleIngredientsChange}
+                className="w-full"
+                required
+              />
             </div>
 
             {/* Phần Giá và Các thuộc tính */}

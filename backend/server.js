@@ -8,6 +8,7 @@ import mainPage from "./routes/mainPage.route.js";
 import couponRoutes from "./routes/coupon.route.js";
 import orderRoutes from "./routes/order.route.js";
 import tableRoutes from "./routes/table.route.js";
+import ingredientRoutes from "./routes/ingredient.route.js";
 import cors from "cors";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -41,6 +42,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/tables", tableRoutes);
 // Sử dụng route cho VNPay
 app.use('/api/vnpay', vnpayRoutes);
+app.use("/api/ingredients", ingredientRoutes);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
