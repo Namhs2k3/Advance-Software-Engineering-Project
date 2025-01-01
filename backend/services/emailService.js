@@ -74,3 +74,18 @@ export const sendInvoiceEmail = async (customerEmail, invoiceDetails) => {
   }
 };
 
+export const sendLowStockNotification = async (lowStockMessage) => {
+  try {
+    const mailOptions = {
+      from: process.env.SMTP_USER,
+      to: process.env.ADMIN_EMAIL,
+      subject: 'Thông báo: Nguyên liệu sắp hết',
+      text: `Các nguyên liệu sau đang dưới mức tồn kho an toàn:\n\n${lowStockMessage}`
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('Email thông báo nguyên liệu sắp hết đã được gửi thành công.');
+  } catch (error) {
+    console.error('Lỗi khi gửi email thông báo nguyên liệu:', error);
+  }
+};
