@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import Table from "../models/table.model.js";
+import Product from "../models/product.model.js";
+import Ingredient from "../models/ingredient.model.js";
 // Get all tables
 export const getTables = async (req, res) => {
   try {
@@ -115,31 +117,69 @@ export const addProductToCart = async (req, res) => {
         .json({ success: false, message: "Table not found" });
     }
 
-    // Kiểm tra nếu sản phẩm đã có trong giỏ
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+    }
+
+    const ingredientUpdates = [];
+    let needsDisplayTypeUpdate = false;
+
+    for (const ingredientId of product.ingredients) {
+      const ingredientDoc = await Ingredient.findById(ingredientId);
+
+      if (!ingredientDoc) {
+        return res
+          .status(404)
+          .json({ success: false, message: `Ingredient ${ingredientId} not found` });
+      }
+
+      // const totalRequired = requiredQuantity * quantity;
+
+      if (ingredientDoc.quantity < quantity) {
+        return res
+          .status(400)
+          .json({ success: false, message: `Not enough ${ingredientDoc.name} in stock` });
+      }
+
+      if (ingredientDoc.quantity - quantity < ingredientDoc.safeThreshold) {
+        needsDisplayTypeUpdate = true;
+      }
+
+      ingredientDoc.quantity -= quantity;
+      ingredientUpdates.push(ingredientDoc.save());
+    }
+
+    if (needsDisplayTypeUpdate) {
+      product.displayType = 2;
+      await product.save();
+    }
+
     const existingCartItem = table.cart.find(
-      (item) => item.product.toString() === productId // Fix: Referencing 'cart' not 'CartItem'
+      (item) => item.product.toString() === productId
     );
 
     if (existingCartItem) {
-      // Nếu sản phẩm đã có trong giỏ, chỉ cập nhật số lượng mà không thay đổi `doneQuantity`
       existingCartItem.quantity += quantity;
     } else {
-      // Thêm sản phẩm mới vào giỏ với giá trị mặc định cho `statusProduct`
       table.cart.push({
         product: productId,
         quantity,
-        statusProduct: [
-          { state: 0, doneQuantity: 0 }, // Khởi tạo với `doneQuantity` bằng 0
-        ],
+        statusProduct: [{ state: 0, doneQuantity: 0 }],
       });
     }
 
-    // Lưu vào cơ sở dữ liệu
+    // Lưu các cập nhật vào ingredients
+    await Promise.all(ingredientUpdates);
+
+    // Lưu table
     await table.save();
 
     res.status(200).json({
       success: true,
-      updatedCartItem: table.cart, // Trả về giỏ hàng đã cập nhật
+      updatedCartItem: table.cart,
     });
   } catch (error) {
     console.error(error);
@@ -190,7 +230,7 @@ export const getTableById = async (req, res) => {
 // Remove a product from the table's cart
 export const removeProductFromCart = async (req, res) => {
   const { id } = req.params;
-  const { productId } = req.body;
+  const { productId, quantity } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res
@@ -204,6 +244,44 @@ export const removeProductFromCart = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Table not found" });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+    }
+
+    const ingredientUpdates = [];
+    let needsDisplayTypeUpdate = false;
+
+    for (const ingredientId of product.ingredients) {
+      const ingredientDoc = await Ingredient.findById(ingredientId);
+
+      if (!ingredientDoc) {
+        return res
+          .status(404)
+          .json({ success: false, message: `Ingredient ${ingredientId} not found` });
+      }
+
+      // if (ingredientDoc.quantity < quantity) {
+      //   return res
+      //     .status(400)
+      //     .json({ success: false, message: `Not enough ${ingredientDoc.name} in stock` });
+      // }
+
+      if (ingredientDoc.quantity + quantity > ingredientDoc.safeThreshold) {
+        needsDisplayTypeUpdate = true;
+      }
+
+      ingredientDoc.quantity += quantity;
+      ingredientUpdates.push(ingredientDoc.save());
+    }
+
+    if (needsDisplayTypeUpdate) {
+      product.displayType = 1;
+      await product.save();
     }
 
     // Remove product from the cart
@@ -228,7 +306,7 @@ export const removeProductFromCart = async (req, res) => {
 // Update product quantity in the table's cart
 export const updateProductQuantity = async (req, res) => {
   const { id } = req.params; // Table ID
-  const { productId, quantity } = req.body; // Product ID and new quantity
+  const { productId, quantity, value } = req.body; // Product ID and new quantity
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res
@@ -250,7 +328,6 @@ export const updateProductQuantity = async (req, res) => {
         .json({ success: false, message: "Table not found" });
     }
 
-    // Find the product in the cart and update its quantity
     const cartItem = table.cart.find(
       (item) => item.product.toString() === productId
     );
@@ -258,6 +335,46 @@ export const updateProductQuantity = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Product not found in cart" });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+    }
+
+    const ingredientUpdates = [];
+    let needsDisplayTypeUpdate = false;
+
+    for (const ingredientId of product.ingredients) {
+      const ingredientDoc = await Ingredient.findById(ingredientId);
+
+      if (!ingredientDoc) {
+        return res
+          .status(404)
+          .json({ success: false, message: `Ingredient ${ingredientId} not found` });
+      }
+
+      if (ingredientDoc.quantity + cartItem.quantity + value > ingredientDoc.safeThreshold) {
+        needsDisplayTypeUpdate = false;
+      } else {
+        needsDisplayTypeUpdate = true;
+      }
+
+      if (needsDisplayTypeUpdate) ingredientDoc.quantity -= value;
+      ingredientUpdates.push(ingredientDoc.save());
+    }
+
+    if (needsDisplayTypeUpdate) {
+      product.displayType = 1;
+      await product.save();
+    } else {
+      product.displayType = 2;
+      await product.save();
+      return res
+        .status(404)
+        .json({ success: false, message: "Cannot add this item anymore" });
     }
 
     cartItem.quantity = quantity;
