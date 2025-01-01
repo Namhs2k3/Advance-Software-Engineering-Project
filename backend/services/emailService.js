@@ -76,9 +76,11 @@ export const sendInvoiceEmail = async (customerEmail, invoiceDetails) => {
 
 export const sendLowStockNotification = async (lowStockMessage) => {
   try {
+    const recipient = process.env.ADMIN_EMAIL || 'hoangtuan06102020@gmail.com';
+
     const mailOptions = {
       from: process.env.SMTP_USER,
-      to: process.env.ADMIN_EMAIL,
+      to: recipient,
       subject: 'Thông báo: Nguyên liệu sắp hết',
       text: `Các nguyên liệu sau đang dưới mức tồn kho an toàn:\n\n${lowStockMessage}`
     };
