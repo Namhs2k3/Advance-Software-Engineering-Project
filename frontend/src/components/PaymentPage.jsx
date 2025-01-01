@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes} from "@fortawesome/free-solid-svg-icons";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 
 const PaymentPage = () => {
@@ -181,6 +181,7 @@ const PaymentPage = () => {
     console.log("Dữ liệu gửi lên server:", orderData);
 
     try {
+      toast.info("Đơn hàng đang được xử lý, vui lòng đợi trong giây lát!");
       // Post the order data
       const response = await axios.post(
         "http://localhost:5000/api/orders",
@@ -202,7 +203,11 @@ const PaymentPage = () => {
       localStorage.removeItem("tempCart");
 
       // Redirect after successful order and reset
-      window.location.href = "/order-success"; // Redirect after successful order
+      if (response.data.paymentUrl) {
+        window.location.href = response.data.paymentUrl; // Redirect after successful order
+      } else {
+        window.location.href = "/order-success"; // Redirect after successful order
+      }
     } catch (error) {
       console.error("Lỗi khi tạo đơn hàng:", error);
       toast.error("Đã có lỗi xảy ra, vui lòng thử lại.");

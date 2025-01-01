@@ -38,16 +38,15 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
   // Xử lý lưu thông tin
   const handleSave = async () => {
     try {
-      const { name, number, } = customerInfo;
-      const response = await axios.put(
-        `http://localhost:5000/api/orders/${order._id}`,
-        {
-          name,
-          number,
-        },
-      );
-      toast.success("Cập nhật thông tin thành công!");
-      onOrderUpdated(); // Gọi callback để reload danh sách đơn hàng trong ManageOrder
+      // const { name, number } = customerInfo;
+      // const response = await axios.put(
+      //   `http://localhost:5000/api/orders/${order._id}`,
+      //   {
+      //     name,
+      //     number,
+      //   },
+      // );
+      //onOrderUpdated(); // Gọi callback để reload danh sách đơn hàng trong ManageOrder
       onClose(); // Đóng modal
     } catch (error) {
       console.error("Lỗi khi cập nhật thông tin:", error);
@@ -85,7 +84,7 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
                 value={customerInfo.name}
                 onChange={handleInputChange}
                 className="mb-4 w-full rounded-md border border-gray-300 p-2"
-                // disabled // Khóa không cho chỉnh sửa
+                disabled
               />
 
               <label className="mb-2 block font-josefin text-2xl font-bold">
@@ -96,6 +95,7 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
                 name="number"
                 value={customerInfo.number}
                 onChange={handleInputChange}
+                disabled
                 className="mb-4 w-full rounded-md border border-gray-300 p-2"
               />
 
@@ -129,7 +129,7 @@ const DetailOrder = ({ order, onClose, onOrderUpdated }) => {
                   onClick={handleSave}
                   className="rounded bg-blue-500 px-5 py-2 font-josefin text-xl text-white transition-transform duration-200 hover:scale-95"
                 >
-                  Lưu thông tin
+                  OK
                 </button>
               </div>
             </div>
