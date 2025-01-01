@@ -306,18 +306,12 @@ export const removeProductFromCart = async (req, res) => {
 // Update product quantity in the table's cart
 export const updateProductQuantity = async (req, res) => {
   const { id } = req.params; // Table ID
-  const { productId, quantity, value } = req.body; // Product ID and new quantity
+  const { productId, value } = req.body; // Product ID and new quantity
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res
       .status(404)
       .json({ success: false, message: "Invalid Table ID" });
-  }
-
-  if (quantity < 1) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid quantity" });
   }
 
   try {
@@ -356,13 +350,20 @@ export const updateProductQuantity = async (req, res) => {
           .json({ success: false, message: `Ingredient ${ingredientId} not found` });
       }
 
-      if (ingredientDoc.quantity + cartItem.quantity + value > ingredientDoc.safeThreshold) {
+      const qty = ingredientDoc.quantity - cartItem.quantity - value;
+      if (value > 0 && ingredientDoc.quantity < ingredientDoc.safeThreshold || qty <= 0) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Cannot add this item anymore" });
+      }
+
+      if (qty > 0 && qty < ingredientDoc.safeThreshold) {
         needsDisplayTypeUpdate = false;
       } else {
         needsDisplayTypeUpdate = true;
       }
 
-      if (needsDisplayTypeUpdate) ingredientDoc.quantity -= value;
+      if (needsDisplayTypeUpdate || value < 0) ingredientDoc.quantity -= value;
       ingredientUpdates.push(ingredientDoc.save());
     }
 
@@ -372,12 +373,13 @@ export const updateProductQuantity = async (req, res) => {
     } else {
       product.displayType = 2;
       await product.save();
-      return res
-        .status(404)
-        .json({ success: false, message: "Cannot add this item anymore" });
     }
 
-    cartItem.quantity = quantity;
+    if (cartItem.quantity + value === 0) {
+      table.cart = table.cart.filter((item) => item.product.toString() !== productId);
+    } else {
+      cartItem.quantity += value;
+    }
 
     // Save the updated table
     await table.save();

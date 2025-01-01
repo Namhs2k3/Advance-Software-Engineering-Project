@@ -35,20 +35,16 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
     const updatedItem = cart.find((item) => item._id === id);
 
     if (updatedItem) {
-      const newQuantity = Math.max(updatedItem.quantity + value, 1);
-
       // Gửi yêu cầu cập nhật đến API
-      const success = await updateQuantityAPI(
-        updatedItem.product._id,
-        newQuantity,
-        value,
-      );
+      const success = await updateQuantityAPI(updatedItem.product._id, value);
 
       // Nếu API trả về thành công, cập nhật cart
       if (success) {
         setCart((prevCart) =>
           prevCart.map((item) =>
-            item._id === id ? { ...item, quantity: newQuantity } : item,
+            item._id === id
+              ? { ...item, quantity: updatedItem.quantity + value }
+              : item,
           ),
         );
       }
@@ -88,21 +84,28 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
   const handleBlur = async (id) => {
     const updatedItem = cart.find((item) => item._id === id);
 
-    if (updatedItem && (!updatedItem.quantity || isNaN(updatedItem.quantity))) {
-      updatedItem.quantity = 1; // Giá trị mặc định là 1
-      setCart([...cart]);
-    }
-
     if (updatedItem) {
       const previousQuantity = previousQuantities[id] || 0;
       const newQuantity = updatedItem.quantity;
       const difference = newQuantity - previousQuantity;
 
-      await updateQuantityAPI(
+      const success = await updateQuantityAPI(
         updatedItem.product._id,
-        updatedItem.quantity,
         difference,
       );
+
+      if (success) {
+        if (
+          updatedItem &&
+          (!updatedItem.quantity || isNaN(updatedItem.quantity))
+        ) {
+          updatedItem.quantity = 1; // Giá trị mặc định là 1
+          setCart([...cart]);
+        }
+      } else {
+        updatedItem.quantity = previousQuantities[id];
+        setCart([...cart]);
+      }
     }
   };
 
@@ -132,11 +135,11 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
     }
   };
 
-  const updateQuantityAPI = async (productId, newQuantity, value) => {
+  const updateQuantityAPI = async (productId, value) => {
     try {
       const response = await axios.put(
         `http://localhost:5000/api/tables/${selectedTable._id}/updateProductQuantity`,
-        { productId, quantity: newQuantity, value },
+        { productId, value },
       );
 
       if (response.data.success) {
