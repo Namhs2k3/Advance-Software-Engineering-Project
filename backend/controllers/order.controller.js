@@ -199,15 +199,7 @@ export const createOrder = async (req, res) => {
       }
 
       if (lowStockIngredients.length > 0) {
-        const lowStockMessage = lowStockIngredients
-          .map(
-            (ingredient) =>
-              `- ${ingredient.name}: Hiện tại ${ingredient.quantity}, ngưỡng an toàn là ${ingredient.safeThreshold}`
-          )
-          .join("\n");
-
-        await sendLowStockNotification(lowStockMessage);
-        console.log("Email thông báo nguyên liệu sắp hết đã được gửi.");
+        await sendLowStockNotification(lowStockIngredients);
       }
     } catch (emailError) {
       console.error("Lỗi khi gửi email thông báo nguyên liệu sắp hết:", emailError);
