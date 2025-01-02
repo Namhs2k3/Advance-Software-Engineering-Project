@@ -19,20 +19,35 @@ const AddCoupon = ({ onClose, onAddSuccess }) => {
     }));
   };
 
+  const validateForm = () => {
+    const { code, discountValue, maxUsage } = newCoupon;
+    if (!code || !discountValue || !maxUsage) {
+      setError("Vui lòng điền đầy đủ thông tin.");
+      return false;
+    }
+    if (isNaN(discountValue) || isNaN(maxUsage)) {
+      setError("Giá trị giảm và tổng số lượng phải là số.");
+      return false;
+    }
+    return true;
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
+    if (!validateForm()) return;
+
+    setLoading(true);
     try {
       const response = await axios.post(
         "http://localhost:5000/api/coupons",
-        newCoupon,
+        newCoupon
       );
 
       if (response.status === 201) {
-        onAddSuccess(); // Gọi để reload lại danh sách coupon
-        onClose(); // Đóng modal
+        onAddSuccess();
+        onClose();
       } else {
         throw new Error("Thêm coupon thất bại. Vui lòng thử lại.");
       }
@@ -43,58 +58,42 @@ const AddCoupon = ({ onClose, onAddSuccess }) => {
     }
   };
 
-  const handleCancel = () => {
-    onClose(); // Close the modal without saving
-  };
+  const handleCancel = () => onClose();
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <div className="mb-4 text-center text-2xl font-bold">Thêm Coupon</div>
+        <h2 className="mb-4 text-center text-2xl font-bold">Thêm Coupon</h2>
         <form onSubmit={handleSave}>
-          <div className="mb-4">
-            <label className="mb-2 block text-lg font-medium">Mã Coupon</label>
-            <input
-              type="text"
-              name="code"
-              value={newCoupon.code}
-              onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 p-2"
-              placeholder="Nhập mã coupon"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="mb-2 block text-lg font-medium">
-              Giá trị giảm
-            </label>
-            <input
-              type="text"
-              name="discountValue"
-              value={newCoupon.discountValue}
-              onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 p-2"
-              placeholder="Nhập giá trị giảm"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="mb-2 block text-lg font-medium">
-              Tổng Số lượng
-            </label>
-            <input
-              type="text"
-              name="maxUsage"
-              value={newCoupon.maxUsage}
-              onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 p-2"
-              placeholder="Nhập số lượng coupon"
-            />
-          </div>
+          {[
+            { label: "Mã Coupon", name: "code", placeholder: "Nhập mã coupon" },
+            {
+              label: "Giá trị giảm",
+              name: "discountValue",
+              placeholder: "Nhập giá trị giảm",
+            },
+            {
+              label: "Tổng số lượng",
+              name: "maxUsage",
+              placeholder: "Nhập số lượng coupon",
+            },
+          ].map(({ label, name, placeholder }) => (
+            <div key={name} className="mb-4">
+              <label className="mb-2 block text-lg font-medium">{label}</label>
+              <input
+                type="text"
+                name={name}
+                value={newCoupon[name]}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-300 p-2"
+                placeholder={placeholder}
+              />
+            </div>
+          ))}
 
           {error && <div className="mb-4 text-red-500">{error}</div>}
 
-          <div className="mt-8 flex justify-center space-x-40">
+          <div className="mt-8 flex justify-center space-x-4">
             <button
               type="button"
               onClick={handleCancel}
@@ -109,7 +108,7 @@ const AddCoupon = ({ onClose, onAddSuccess }) => {
               }`}
               disabled={loading}
             >
-              {loading ? <Loading /> : <>Thêm</>}
+              {loading ? <Loading /> : "Thêm"}
             </button>
           </div>
         </form>
