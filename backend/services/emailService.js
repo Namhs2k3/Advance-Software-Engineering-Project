@@ -74,3 +74,48 @@ export const sendInvoiceEmail = async (customerEmail, invoiceDetails) => {
   }
 };
 
+export const sendLowStockNotification = async (lowStockIngredients) => {
+  try {
+    const recipient = process.env.ADMIN_EMAIL || 'hoangtuan06102020@gmail.com';
+
+    const lowStockIngredientsHTML = lowStockIngredients.map((ingredient) => `
+    <tr>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+        ${ingredient.name}
+        </td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${ingredient.quantity}</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${ingredient.safeThreshold}</td>
+    </tr>
+    `).join('');
+
+    const emailHTML = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h1 style="color: #eb1414;">Các nguyên liệu sau đang dưới mức tồn kho an toàn:</h1>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+          <thead>
+            <tr style="background-color: #f2f2f2;">
+              <th style="padding: 8px; border: 1px solid #ddd;">Tên nguyên liệu</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Số lượng hiện tại</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Ngưỡng an toàn</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${lowStockIngredientsHTML}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    const mailOptions = {
+      from: process.env.SMTP_USER,
+      to: recipient,
+      subject: 'Thông báo: Nguyên liệu sắp hết',
+      html: emailHTML,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('Email thông báo nguyên liệu sắp hết đã được gửi thành công.');
+  } catch (error) {
+    console.error('Lỗi khi gửi email thông báo nguyên liệu:', error);
+  }
+};

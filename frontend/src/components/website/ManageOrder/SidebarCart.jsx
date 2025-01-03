@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
+  const [previousQuantities, setPreviousQuantities] = useState({});
 
   useEffect(() => {
     if (selectedTable && isOpen) {
@@ -21,6 +22,7 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
           }
         } catch (error) {
           console.error("Error fetching table data", error);
+          toast.error(error.response.data.message);
         }
       };
 
@@ -29,20 +31,25 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
   }, [isOpen, selectedTable]);
 
   const handleQuantityChange = async (id, value) => {
-    const updatedCart = cart.map((item) =>
-      item._id === id
-        ? { ...item, quantity: Math.max(item.quantity + value, 1) }
-        : item,
-    );
-
-    const updatedItem = updatedCart.find((item) => item._id === id);
-    setCart(updatedCart);
+    // Tìm sản phẩm cần cập nhật
+    const updatedItem = cart.find((item) => item._id === id);
 
     if (updatedItem) {
-      await updateQuantityAPI(updatedItem.product._id, updatedItem.quantity);
+      // Gửi yêu cầu cập nhật đến API
+      const success = await updateQuantityAPI(updatedItem.product._id, value);
+
+      // Nếu API trả về thành công, cập nhật cart
+      if (success) {
+        setCart((prevCart) =>
+          prevCart.map((item) =>
+            item._id === id
+              ? { ...item, quantity: updatedItem.quantity + value }
+              : item,
+          ),
+        );
+      }
     }
   };
-
 
   const handleInputChange = (id, e) => {
     const value = e.target.value;
@@ -64,21 +71,45 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
     }
   };
 
+  const handleFocus = (id) => {
+    const item = cart.find((item) => item._id === id);
+    if (item) {
+      setPreviousQuantities((prev) => ({
+        ...prev,
+        [id]: item.quantity,
+      }));
+    }
+  };
 
   const handleBlur = async (id) => {
     const updatedItem = cart.find((item) => item._id === id);
 
-    if (updatedItem && (!updatedItem.quantity || isNaN(updatedItem.quantity))) {
-      updatedItem.quantity = 1; // Giá trị mặc định là 1
-      setCart([...cart]);
-    }
-
     if (updatedItem) {
-      await updateQuantityAPI(updatedItem.product._id, updatedItem.quantity);
+      const previousQuantity = previousQuantities[id] || 0;
+      const newQuantity = updatedItem.quantity;
+      const difference = newQuantity - previousQuantity;
+
+      const success = await updateQuantityAPI(
+        updatedItem.product._id,
+        difference,
+      );
+
+      if (success) {
+        if (
+          updatedItem &&
+          (!updatedItem.quantity || isNaN(updatedItem.quantity))
+        ) {
+          updatedItem.quantity = 1; // Giá trị mặc định là 1
+          setCart([...cart]);
+        }
+      } else {
+        updatedItem.quantity = previousQuantities[id];
+        setCart([...cart]);
+      }
     }
   };
 
-  const handleRemoveItem = async (id) => {
+  const handleRemoveItem = async (id, quantity) => {
     const productId = cart.find((item) => item._id === id)?.product._id;
 
     if (!productId) {
@@ -93,40 +124,37 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
     try {
       await axios.put(
         `http://localhost:5000/api/tables/${selectedTable._id}/removeProduct`,
-        { productId },
+        { productId, quantity },
       );
       // Không cần cập nhật lại giỏ hàng từ backend vì bạn đã có giỏ hàng cục bộ
     } catch (error) {
       console.error("Error removing product from cart", error);
       // Nếu có lỗi, khôi phục lại giỏ hàng cũ (nếu cần)
       setCart(cart);
+      toast.error(error.response.data.message);
     }
   };
 
-
-  const updateQuantityAPI = async (productId, newQuantity) => {
+  const updateQuantityAPI = async (productId, value) => {
     try {
       const response = await axios.put(
         `http://localhost:5000/api/tables/${selectedTable._id}/updateProductQuantity`,
-        { productId, quantity: newQuantity },
+        { productId, value },
       );
 
       if (response.data.success) {
-        setCart((prevCart) =>
-          prevCart.map((item) =>
-            item.product._id === productId
-              ? { ...item, quantity: newQuantity }
-              : item,
-          ),
-        );
+        return true; // API thành công
       } else {
         console.error(
           "Failed to update product quantity:",
           response.data.message,
         );
+        return false; // API không thành công
       }
     } catch (error) {
       console.error("Error updating product quantity:", error);
+      toast.error(error.response?.data?.message || "Lỗi hệ thống");
+      return false;
     }
   };
 
@@ -137,8 +165,6 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
         item.statusProduct.reduce((sum, sp) => sum + sp.doneQuantity, 0),
     );
   };
-
-
 
   const handleCheckout = () => {
     if (canCheckout()) {
@@ -151,7 +177,6 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
       toast.error("Không thể thanh toán, có món chưa phục vụ xong!"); // Hiển thị thông báo lỗi
     }
   };
-
 
   const totalPrice = cart.reduce(
     (total, item) => total + item.product.price * item.quantity,
@@ -212,6 +237,7 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
                       value={item.quantity}
                       onChange={(e) => handleInputChange(item._id, e)}
                       onBlur={() => handleBlur(item._id)}
+                      onFocus={() => handleFocus(item._id)}
                       className="h-8 w-12 rounded-md border text-center"
                     />
                     <button
@@ -225,12 +251,13 @@ const SidebarCart = ({ isOpen, onClose, selectedTable }) => {
                 <div className="relative pr-2 text-right">
                   <button
                     className="text-2xl text-gray-500 hover:text-red-700"
-                    onClick={() => handleRemoveItem(item._id)}
+                    onClick={() => handleRemoveItem(item._id, item.quantity)}
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
                   <span className="line-clamp-1 block pt-10 font-josefin text-lg font-bold text-black">
-                    {(item.quantity * item.product.sell_price).toLocaleString()}₫
+                    {(item.quantity * item.product.sell_price).toLocaleString()}
+                    ₫
                   </span>
                 </div>
               </div>

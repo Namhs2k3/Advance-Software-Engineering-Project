@@ -1,6 +1,7 @@
 import Product from "../models/product.model.js";
 import mongoose from "mongoose";
 import Category from "../models/category.model.js";
+import Ingredient from "../models/ingredient.model.js"
 export const getProduct = async (req, res) => {
   const { searchTerm } = req.query; // Get search term from query parameters
 
@@ -54,6 +55,11 @@ export const createProduct = async (req, res) => {
     return res
       .status(400)
       .json({ success: false, message: "Category is required" });
+  if (!product.ingredients || product.ingredients.length === 0) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Ingredients are required" });
+  }
 
   if (product.sell_price > product.price) {
     return res
@@ -62,6 +68,7 @@ export const createProduct = async (req, res) => {
   }
 
   try {
+    // Kiểm tra xem category có tồn tại không
     const categoryExists = await Category.findById(product.category);
     if (!categoryExists) {
       return res.status(404).json({
@@ -70,26 +77,44 @@ export const createProduct = async (req, res) => {
       });
     }
 
+    const ingredientsArray = JSON.parse(product.ingredients);
+
+    // Kiểm tra từng ingredient ID
+    for (const ingredientId of ingredientsArray) {
+      if (!mongoose.Types.ObjectId.isValid(ingredientId)) {
+        return res
+          .status(400)
+          .json({ success: false, message: `Invalid ingredient ID: ${ingredientId}` });
+      }
+      const ingredientExists = await Ingredient.findById(ingredientId);
+      if (!ingredientExists) {
+        return res
+          .status(404)
+          .json({ success: false, message: `Ingredient not found: ${ingredientId}` });
+      }
+    }
+
     const imagePath = req.file.filename;
 
     const newProduct = new Product({
       ...product,
+      ingredients: ingredientsArray.map((id) => new mongoose.Types.ObjectId(id)),
       image: imagePath,
     });
 
     await newProduct.save();
-    const populatedProduct = await Product.findById(newProduct._id).populate(
-      "category",
-      "name"
-    );
+    const populatedProduct = await Product.findById(newProduct._id)
+      .populate("category", "name")
+
     const productWithFullImagePath = {
       ...populatedProduct.toObject(),
       image: `http://localhost:5000/assets/${populatedProduct.image}`,
     };
+
     res.status(201).json({ success: true, data: productWithFullImagePath });
   } catch (error) {
     console.log("Error in creating product", error.message);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -114,11 +139,47 @@ export const updateProduct = async (req, res) => {
       }
     }
 
+    let ingredientsArray = undefined;
+    if (product.ingredients) {
+      ingredientsArray = JSON.parse(product.ingredients);
+
+      // Kiểm tra từng ingredient ID
+      for (const ingredientId of ingredientsArray) {
+        if (!mongoose.Types.ObjectId.isValid(ingredientId)) {
+          return res
+            .status(400)
+            .json({ success: false, message: `Invalid ingredient ID: ${ingredientId}` });
+        }
+        const ingredientExists = await Ingredient.findById(ingredientId);
+        if (!ingredientExists) {
+          return res
+            .status(404)
+            .json({ success: false, message: `Ingredient not found: ${ingredientId}` });
+        }
+      }
+    }
+
     const existingProduct = await Product.findById(id);
     if (!existingProduct) {
       return res
         .status(404)
         .json({ success: false, message: "Product not found" });
+    }
+
+    for (const ingredientId of existingProduct.ingredients) {
+      const ingredientDoc = await Ingredient.findById(ingredientId);
+
+      if (!ingredientDoc) {
+        return res
+          .status(404)
+          .json({ success: false, message: `Ingredient ${ingredientId} not found` });
+      }
+
+      if (ingredientDoc.quantity < ingredientDoc.safeThreshold) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Ingredient low" });
+      }
     }
 
     // Kiểm tra và cập nhật ảnh nếu có
@@ -127,9 +188,18 @@ export const updateProduct = async (req, res) => {
       updatedImagePath = req.file.filename;
     }
 
+    const updateData = {
+      ...product,
+      image: updatedImagePath
+    };
+
+    if (ingredientsArray && ingredientsArray.length > 0) {
+      updateData.ingredients = ingredientsArray.map((id) => new mongoose.Types.ObjectId(id));
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      { ...product, image: updatedImagePath },
+      updateData,
       { new: true }
     ).populate("category", "name");
 

@@ -1,10 +1,11 @@
 import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import Coupon from "../models/coupon.model.js";
+import Ingredient from "../models/ingredient.model.js"
 import { ObjectId } from "mongodb";
-import { sendInvoiceEmail } from '../services/emailService.js';
+import { sendInvoiceEmail, sendLowStockNotification } from '../services/emailService.js';
 import { format } from 'date-fns';
-
+import crypto from 'crypto';
 
 export const getOrder = async (req, res) => {
   try {
@@ -30,9 +31,6 @@ export const getOrder = async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 };
-
-import querystring from 'querystring';
-import crypto from 'crypto';
 
 export const createOrder = async (req, res) => {
   try {
@@ -130,32 +128,32 @@ export const createOrder = async (req, res) => {
         vnp_OrderType: "other",
         vnp_ReturnUrl: vnp_ReturnUrl,
         vnp_TmnCode: vnp_TmnCode,
-        vnp_TxnRef: orderId, 
+        vnp_TxnRef: orderId,
         vnp_Version: "2.1.0",
       };
-      
+
 
       // Sắp xếp tham số theo thứ tự từ điển
-  const sortedParams = Object.keys(params)
-  .sort()
-  .map((key) => `${key}=${encodeURIComponent(String(params[key]))}`)
-  .join("&");
+      const sortedParams = Object.keys(params)
+        .sort()
+        .map((key) => `${key}=${encodeURIComponent(String(params[key]))}`)
+        .join("&");
 
 
-  // Tính toán mã bảo mật (secure hash)
-  const secureHash = crypto
-    .createHmac('sha512', vnp_HashSecret)
-    .update(sortedParams)  // Dùng tham số đã sắp xếp, không cần stringify
-    .digest('hex');
+      // Tính toán mã bảo mật (secure hash)
+      const secureHash = crypto
+        .createHmac('sha512', vnp_HashSecret)
+        .update(sortedParams)  // Dùng tham số đã sắp xếp, không cần stringify
+        .digest('hex');
 
-    console.log("Calculated Secure Hash:", secureHash);
-    console.log("Query String: ", params);
-    console.log("sortedParams: ", sortedParams);
+      console.log("Calculated Secure Hash:", secureHash);
+      console.log("Query String: ", params);
+      console.log("sortedParams: ", sortedParams);
 
-  // Tạo URL thanh toán
-  const paymentUrl = `${vnp_Url}?${sortedParams}&vnp_SecureHash=${secureHash}`;
+      // Tạo URL thanh toán
+      const paymentUrl = `${vnp_Url}?${sortedParams}&vnp_SecureHash=${secureHash}`;
 
-  console.log('VNPay Payment URL:', paymentUrl);
+      console.log('VNPay Payment URL:', paymentUrl);
 
 
       // Trả về URL thanh toán
@@ -179,6 +177,32 @@ export const createOrder = async (req, res) => {
       console.log("Email hóa đơn đã được gửi thành công.");
     } catch (emailError) {
       console.error("Lỗi khi gửi email hóa đơn:", emailError);
+    }
+
+    try {
+      const lowStockIngredients = [];
+
+      for (const item of cart) {
+        const productDetails = await Product.findById(item.productId).select('ingredients');
+        if (productDetails && productDetails.ingredients) {
+          for (const ingredientId of productDetails.ingredients) {
+            const ingredient = await Ingredient.findById(ingredientId);
+            if (ingredient && ingredient.quantity < ingredient.safeThreshold) {
+              lowStockIngredients.push({
+                name: ingredient.name,
+                quantity: ingredient.quantity,
+                safeThreshold: ingredient.safeThreshold,
+              });
+            }
+          }
+        }
+      }
+
+      if (lowStockIngredients.length > 0) {
+        await sendLowStockNotification(lowStockIngredients);
+      }
+    } catch (emailError) {
+      console.error("Lỗi khi gửi email thông báo nguyên liệu sắp hết:", emailError);
     }
 
     res.status(201).json({
