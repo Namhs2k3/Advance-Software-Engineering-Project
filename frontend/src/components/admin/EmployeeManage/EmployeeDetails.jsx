@@ -30,7 +30,7 @@ const EmployeeDetails = ({ id, onBackToList }) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:5000/api/shiftandperformace/${id}/shifts`,
+        `http://localhost:5000/api/shiftandperformance/${id}/shifts`,
         { withCredentials: true },
       );
       setShifts(response.data.data);
@@ -45,7 +45,7 @@ const EmployeeDetails = ({ id, onBackToList }) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:5000/api/shiftandperformace/${id}/performance`,
+        `http://localhost:5000/api/shiftandperformance/${id}/performance`,
         { withCredentials: true },
       );
       setPerformance(response.data.data);
@@ -59,7 +59,7 @@ const EmployeeDetails = ({ id, onBackToList }) => {
   const handleAddShift = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/shiftandperformace/${id}/shifts`,
+        `http://localhost:5000/api/shiftandperformance/${id}/shifts`,
         newShift,
         { withCredentials: true },
       );
@@ -73,7 +73,7 @@ const EmployeeDetails = ({ id, onBackToList }) => {
   const handleEditShift = async (shiftId) => {
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/shiftandperformace/${id}/shifts/${shiftId}`,
+        `http://localhost:5000/api/shiftandperformance/${id}/shifts/${shiftId}`,
         newShift,
         { withCredentials: true },
       );
@@ -87,7 +87,7 @@ const EmployeeDetails = ({ id, onBackToList }) => {
   const handleAddPerformance = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/shiftandperformace/${id}/performance`,
+        `http://localhost:5000/api/shiftandperformance/${id}/performance`,
         newPerformance,
         { withCredentials: true },
       );
@@ -101,7 +101,7 @@ const EmployeeDetails = ({ id, onBackToList }) => {
   const handleEditPerformance = async (performanceId) => {
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/shiftandperformace/${id}/performance/${performanceId}`,
+        `http://localhost:5000/api/shiftandperformance/${id}/performance/${performanceId}`,
         newPerformance,
         { withCredentials: true },
       );

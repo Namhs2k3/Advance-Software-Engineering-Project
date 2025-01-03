@@ -7,6 +7,8 @@ import {
   faReceipt,
   faRightToBracket,
   faTicket,
+  faUser,
+  faUsersGear,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
@@ -19,10 +21,12 @@ import { decodeJWT } from "../utils/jwtUtils";
 import ManageAccount from "./AccountManage/ManageAccount";
 import ManageCategory from "./CategoryManage/ManageCategory";
 import ManageCoupon from "./CouponManage/ManageCoupon";
+import ManageEmployee from "./EmployeeManage/ManageEmployee";
 import ProfileAdmin from "./ManageProfile/ProfileAdmin";
 import ManageOrder from "./OrderManage/ManageOrder";
 import ManageProduct from "./ProductManage/ManageProduct";
 import ManageRequest from "./RequestManage/ManageRequest";
+import ManageTable from "./TableManage/ManageTable";
 
 const SidebarItem = ({ icon, label, isSidebarExpanded, onClick, isActive }) => (
   <li
@@ -128,6 +132,8 @@ const DashBoard = () => {
           return <ProfileAdmin />;
         case "Table":
           return <ManageTable />;
+        case "Employee":
+          return <ManageEmployee />;
         default:
           return <ManageAccount />;
       }
@@ -209,6 +215,13 @@ const DashBoard = () => {
                 isSidebarExpanded={isSidebarExpanded}
                 onClick={() => handleSetActiveComponent("Table")}
                 isActive={activeComponent === "Table"}
+              />
+              <SidebarItem
+                icon={faUsersGear}
+                label="Nhân viên"
+                isSidebarExpanded={isSidebarExpanded}
+                onClick={() => handleSetActiveComponent("Employee")}
+                isActive={activeComponent === "Employee"}
               />
             </>
           )}

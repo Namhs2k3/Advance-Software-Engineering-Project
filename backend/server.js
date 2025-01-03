@@ -9,10 +9,12 @@ import { connectDB } from "./config/db.js";
 import accountRoutes from "./routes/account.route.js";
 import categoryRoutes from "./routes/category.route.js";
 import couponRoutes from "./routes/coupon.route.js";
+import employeeRoutes from "./routes/employee.route.js";
 import loginRoutes from "./routes/loginForm.route.js";
 import mainPage from "./routes/mainPage.route.js";
 import orderRoutes from "./routes/order.route.js";
 import productRoutes from "./routes/product.route.js";
+import shiftandperformanceRoutes from "./routes/shiftandperformance.route.js";
 import tableRoutes from "./routes/table.route.js";
 import vnpayRoutes from "./routes/vnpay.route.js";
 dotenv.config();
@@ -39,6 +41,8 @@ app.use("/api/auth", loginRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/tables", tableRoutes);
+app.use("/api/employee", employeeRoutes);
+app.use("/api/shiftandperformance", shiftandperformanceRoutes);
 // Sử dụng route cho VNPay
 app.use("/api/vnpay", vnpayRoutes);
 
