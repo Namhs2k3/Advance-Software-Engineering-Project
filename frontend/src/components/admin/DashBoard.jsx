@@ -1,6 +1,7 @@
 import {
   faBars,
   faBellConcierge,
+  faBowlFood,
   faClipboardList,
   faCouch,
   faGlassWater,
@@ -22,6 +23,7 @@ import ManageAccount from "./AccountManage/ManageAccount";
 import ManageCategory from "./CategoryManage/ManageCategory";
 import ManageCoupon from "./CouponManage/ManageCoupon";
 import ManageEmployee from "./EmployeeManage/ManageEmployee";
+import ManageIngredient from "./ManageIngredient/ManageIngredient";
 import ProfileAdmin from "./ManageProfile/ProfileAdmin";
 import ManageOrder from "./OrderManage/ManageOrder";
 import ManageProduct from "./ProductManage/ManageProduct";
@@ -134,6 +136,8 @@ const DashBoard = () => {
           return <ManageTable />;
         case "Employee":
           return <ManageEmployee />;
+        case "Ingredient":
+          return <ManageIngredient />;
         default:
           return <ManageAccount />;
       }
@@ -159,7 +163,7 @@ const DashBoard = () => {
               !isSidebarExpanded && "hidden group-hover:block"
             }`}
           >
-            Bamos<span className="text-orange-900 admin-name-app">Coffee</span>
+            Bamos<span className="admin-name-app text-orange-900">Coffee</span>
           </span>
           <button
             onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
@@ -194,6 +198,13 @@ const DashBoard = () => {
                 isSidebarExpanded={isSidebarExpanded}
                 onClick={() => handleSetActiveComponent("Product")}
                 isActive={activeComponent === "Product"}
+              />
+              <SidebarItem
+                icon={faBowlFood}
+                label="Kho hàng"
+                isSidebarExpanded={isSidebarExpanded}
+                onClick={() => handleSetActiveComponent("Ingredient")}
+                isActive={activeComponent === "Ingredient"}
               />
               <SidebarItem
                 icon={faClipboardList}
@@ -245,9 +256,9 @@ const DashBoard = () => {
         } transition-all duration-300`}
       >
         {/* Navbar */}
-        <div className="flex justify-between p-4 bg-white shadow-md">
+        <div className="flex justify-between bg-white p-4 shadow-md">
           <div
-            className="flex items-center justify-center w-10 h-10 ml-16 bg-black rounded-full cursor-pointer"
+            className="ml-16 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-black"
             onMouseEnter={toggleDropdown}
             onMouseLeave={toggleDropdown}
           >
@@ -265,14 +276,14 @@ const DashBoard = () => {
             >
               <ul>
                 <li
-                  className="px-4 py-3 border-b-2 border-black rounded-t-lg cursor-pointer hover:bg-black hover:text-white"
+                  className="cursor-pointer rounded-t-lg border-b-2 border-black px-4 py-3 hover:bg-black hover:text-white"
                   onClick={() => handleSetActiveComponent("ProfileAdmin")}
                 >
                   Thông tin cá nhân
                 </li>
                 <li>
                   <a
-                    className="block px-4 py-3 text-center rounded-b-lg cursor-pointer hover:bg-black hover:text-white"
+                    className="block cursor-pointer rounded-b-lg px-4 py-3 text-center hover:bg-black hover:text-white"
                     onClick={handleLogout}
                   >
                     Đăng xuất
@@ -292,24 +303,24 @@ const DashBoard = () => {
                 <img
                   src={imgpersonportal}
                   alt="Person Portal"
-                  className="w-8 h-8 cursor-pointer"
+                  className="h-8 w-8 cursor-pointer"
                 />
               ) : (
                 <FontAwesomeIcon
                   icon={faRightToBracket}
-                  className="text-3xl cursor-pointer"
+                  className="cursor-pointer text-3xl"
                 />
               )}
             </Link>
             {isHovered && (
-              <span className="absolute px-4 py-2 mt-2 text-sm text-white transform -translate-x-1/2 bg-gray-800 rounded-md shadow-lg -left-4 whitespace-nowrap">
+              <span className="absolute -left-4 mt-2 -translate-x-1/2 transform whitespace-nowrap rounded-md bg-gray-800 px-4 py-2 text-sm text-white shadow-lg">
                 Đến Trang Web
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex-1 p-6 overflow-y-auto bg-gray-50">
+        <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
           {renderContent()}
         </div>
       </div>
