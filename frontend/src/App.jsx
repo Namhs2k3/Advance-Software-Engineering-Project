@@ -1,20 +1,20 @@
 import {
+  Navigate,
+  Route,
   BrowserRouter as Router,
   Routes,
-  Route,
-  Navigate,
 } from "react-router-dom";
-import Navbar from "./components/website/Navbar";
+import "./app.css";
 import PaymentPage from "./components/PaymentPage";
 import Admin from "./components/admin/Admin";
-import "./app.css";
-import OrderSuccess from "./components/website/OrderSuccess";
-import ModalLogin from "./components/website/ModalLogin";
-import ModalForgotPassword from "./components/website/ModalForgotPassword";
-import CustomerProfile from "./components/website/ProfileCustomer/CustomerProfile";
 import AuthenticationCode from "./components/website/AuthenticationCode";
+import OrderTable from "./components/website/ManageOrder/OrderTable";
+import ModalForgotPassword from "./components/website/ModalForgotPassword";
+import ModalLogin from "./components/website/ModalLogin";
+import Navbar from "./components/website/Navbar";
+import OrderSuccess from "./components/website/OrderSuccess";
+import CustomerProfile from "./components/website/ProfileCustomer/CustomerProfile";
 import ResetPassword from "./components/website/ResetPassword";
-import OrderTable from "./components/website/ManageOrder/OrderTable"
 
 // Layout chung có Navbar và Footer
 const MainLayout = ({ children }) => {
@@ -30,7 +30,6 @@ const MainLayout = ({ children }) => {
 const AdminLayout = ({ children }) => {
   return <div className="admin-container">{children}</div>;
 };
-
 
 const PaymentLayout = ({ children }) => {
   return (
@@ -50,7 +49,7 @@ const App = () => {
           path="/"
           element={
             <MainLayout>
-              <OrderTable/>
+              <OrderTable />
             </MainLayout>
           }
         />

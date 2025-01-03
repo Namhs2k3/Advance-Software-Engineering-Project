@@ -1,31 +1,32 @@
-import { useState, useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faUser,
-  faChartColumn,
   faBars,
-  faGlassWater,
-  faRightToBracket,
-  faClipboardList,
-  faReceipt,
-  faTicket,
-  faCouch,
   faBellConcierge,
+  faClipboardList,
+  faCouch,
+  faGlassWater,
+  faReceipt,
+  faRightToBracket,
+  faTicket,
+  faUser,
+  faUsersGear,
 } from "@fortawesome/free-solid-svg-icons";
-import ManageProduct from "./ProductManage/ManageProduct";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import imgpersonportal from "../../../../backend/assets/imgpersonportal.png";
+import { decodeJWT } from "../utils/jwtUtils";
 import ManageAccount from "./AccountManage/ManageAccount";
 import ManageCategory from "./CategoryManage/ManageCategory";
-import { Link } from "react-router-dom";
-import imgpersonportal from "../../../../backend/assets/imgpersonportal.png";
-import Cookies from "js-cookie";
-import ManageOrder from "./OrderManage/ManageOrder";
 import ManageCoupon from "./CouponManage/ManageCoupon";
+import ManageEmployee from "./EmployeeManage/ManageEmployee";
 import ProfileAdmin from "./ManageProfile/ProfileAdmin";
-import axios from "axios";
-import { toast } from "react-toastify";
-import { decodeJWT } from "../utils/jwtUtils";
-import ManageTable from "./TableManage/ManageTable";
+import ManageOrder from "./OrderManage/ManageOrder";
+import ManageProduct from "./ProductManage/ManageProduct";
 import ManageRequest from "./RequestManage/ManageRequest";
+import ManageTable from "./TableManage/ManageTable";
 
 const SidebarItem = ({ icon, label, isSidebarExpanded, onClick, isActive }) => (
   <li
@@ -131,6 +132,8 @@ const DashBoard = () => {
           return <ProfileAdmin />;
         case "Table":
           return <ManageTable />;
+        case "Employee":
+          return <ManageEmployee />;
         default:
           return <ManageAccount />;
       }
@@ -139,7 +142,6 @@ const DashBoard = () => {
     // Nếu không có quyền, hiển thị trang không được phép truy cập
     return <div>Bạn không có quyền truy cập vào nội dung này.</div>;
   };
-
 
   return (
     <div className="flex h-screen">
@@ -157,7 +159,7 @@ const DashBoard = () => {
               !isSidebarExpanded && "hidden group-hover:block"
             }`}
           >
-            Bamos<span className="admin-name-app text-orange-900">Coffee</span>
+            Bamos<span className="text-orange-900 admin-name-app">Coffee</span>
           </span>
           <button
             onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
@@ -214,6 +216,13 @@ const DashBoard = () => {
                 onClick={() => handleSetActiveComponent("Table")}
                 isActive={activeComponent === "Table"}
               />
+              <SidebarItem
+                icon={faUsersGear}
+                label="Nhân viên"
+                isSidebarExpanded={isSidebarExpanded}
+                onClick={() => handleSetActiveComponent("Employee")}
+                isActive={activeComponent === "Employee"}
+              />
             </>
           )}
 
@@ -236,9 +245,9 @@ const DashBoard = () => {
         } transition-all duration-300`}
       >
         {/* Navbar */}
-        <div className="flex justify-between bg-white p-4 shadow-md">
+        <div className="flex justify-between p-4 bg-white shadow-md">
           <div
-            className="ml-16 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-black"
+            className="flex items-center justify-center w-10 h-10 ml-16 bg-black rounded-full cursor-pointer"
             onMouseEnter={toggleDropdown}
             onMouseLeave={toggleDropdown}
           >
@@ -256,14 +265,14 @@ const DashBoard = () => {
             >
               <ul>
                 <li
-                  className="cursor-pointer rounded-t-lg border-b-2 border-black px-4 py-3 hover:bg-black hover:text-white"
+                  className="px-4 py-3 border-b-2 border-black rounded-t-lg cursor-pointer hover:bg-black hover:text-white"
                   onClick={() => handleSetActiveComponent("ProfileAdmin")}
                 >
                   Thông tin cá nhân
                 </li>
                 <li>
                   <a
-                    className="block cursor-pointer rounded-b-lg px-4 py-3 text-center hover:bg-black hover:text-white"
+                    className="block px-4 py-3 text-center rounded-b-lg cursor-pointer hover:bg-black hover:text-white"
                     onClick={handleLogout}
                   >
                     Đăng xuất
@@ -283,24 +292,24 @@ const DashBoard = () => {
                 <img
                   src={imgpersonportal}
                   alt="Person Portal"
-                  className="h-8 w-8 cursor-pointer"
+                  className="w-8 h-8 cursor-pointer"
                 />
               ) : (
                 <FontAwesomeIcon
                   icon={faRightToBracket}
-                  className="cursor-pointer text-3xl"
+                  className="text-3xl cursor-pointer"
                 />
               )}
             </Link>
             {isHovered && (
-              <span className="absolute -left-4 mt-2 -translate-x-1/2 transform whitespace-nowrap rounded-md bg-gray-800 px-4 py-2 text-sm text-white shadow-lg">
+              <span className="absolute px-4 py-2 mt-2 text-sm text-white transform -translate-x-1/2 bg-gray-800 rounded-md shadow-lg -left-4 whitespace-nowrap">
                 Đến Trang Web
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+        <div className="flex-1 p-6 overflow-y-auto bg-gray-50">
           {renderContent()}
         </div>
       </div>
